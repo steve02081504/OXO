@@ -11,305 +11,266 @@
 	<script src="https://cdn.jsdelivr.net/npm/@unocss/runtime" crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/iconify-icon/dist/iconify-icon.min.js"></script>
 
-	<style>
-		/* 自定义动画和样式 */
-		@keyframes pulse {
-			50% {
-				opacity: .6;
-				transform: scale(1.1);
-			}
-		}
-
-		.current-turn-indicator {
-			animation: pulse 2s infinite;
-		}
-
-		.board-cell {
-			width: 100%;
-			height: 100%;
-			transition: all 0.3s ease-in-out;
-			aspect-ratio: 1/1;
-		}
-
-		.board-cell.winning-cell iconify-icon {
-			transform: scale(1.1);
-			color: #34d399;
-			/* 胜利时的颜色 */
-		}
-
-		.board-cell:hover:not(.empty-cell) {
-			cursor: not-allowed;
-		}
-
-		/* 棋子图标样式 */
-		.piece-icon {
-			font-size: clamp(3rem, 10vw, 4rem);
-			stroke-width: 8;
-			stroke-linecap: round;
-		}
-
-		/* 胜利划线路径样式 */
-		#winning-path {
-			stroke: #34d399;
-			stroke-width: 5;
-			stroke-linecap: round;
-			fill: none;
-		}
-
-		#board-container {
-			width: 100%;
-			max-width: 360px;
-			height: auto;
-			aspect-ratio: 1/1;
-			margin: 0 auto;
-		}
-
-		@media (min-width: 768px) {
-			#board-container {
-				max-width: 400px;
-			}
-
-			.piece-icon {
-				font-size: 4.5rem;
-			}
-		}
-	</style>
+	<link rel="stylesheet" href="./index.css" />
 </head>
 
-<body class="flex flex-col justify-center items-center min-h-screen bg-base-200 font-sans select-none">
-	<div id="game-container" class="p-8 rounded-lg shadow-2xl bg-base-100 text-center w-full max-w-md">
-		<!-- 模式选择界面 -->
-		<div id="mode-selection" class="flex justify-around items-center h-48">
-			<button id="pvp-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
-				<iconify-icon class="text-4xl" icon="line-md:emoji-smile"></iconify-icon>
-				<span class="font-bold text-2xl">PVP</span>
-			</button>
-			<button id="pva-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
-				<iconify-icon class="text-4xl" icon="line-md:computer"></iconify-icon>
-				<span class="font-bold text-2xl">PVE</span>
-			</button>
+<body class="flex flex-col min-h-screen bg-base-200 font-sans select-none">
+	<div id="main-layout" class="flex flex-grow justify-center items-center w-full">
+		<!-- Left AI Visualization -->
+		<div id="ai-visualization-left" class="flex-1 flex justify-center items-center p-4 hidden">
+			<!-- 模型可视化将被动态注入这里 -->
 		</div>
 
-		<!-- 游戏主界面 -->
-		<div id="game-view" class="hidden">
-			<div id="turn-indicator" class="flex justify-center items-center gap-8 mb-4 h-16">
-				<div id="turn-x" class="transition-all duration-300">
-					<iconify-icon class="text-5xl" icon="line-md:close" style="color: #f87171;"></iconify-icon>
-				</div>
-				<div id="turn-o" class="transition-all duration-300">
-					<iconify-icon class="text-5xl" icon="line-md:circle" style="color: #60a5fa;"></iconify-icon>
-				</div>
-			</div>
+		<div id="app" class="p-8 rounded-lg shadow-2xl bg-base-100 text-center w-full max-w-md">
+			<header class="game-header">
+				<h1>OXO</h1>
+			</header>
 
-			<div id="board-container" class="relative">
-				<div id="board" class="grid grid-cols-3 gap-2 absolute inset-0"></div>
-				<svg id="winning-line-svg" class="absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 120 120"></svg>
-			</div>
+			<main class="game-main">
+				<!-- 模式选择界面 -->
+				<section id="mode-selection" class="view-section">
+					<div class="flex flex-wrap justify-center items-center gap-4">
+						<button id="pvp-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+							<iconify-icon class="text-4xl" icon="line-md:emoji-smile"></iconify-icon>
+							<span class="font-bold text-2xl">PVP</span>
+						</button>
+						<button id="pve-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+							<iconify-icon class="text-4xl" icon="line-md:computer"></iconify-icon>
+							<span class="font-bold text-2xl">PVE</span>
+						</button>
+						<button id="eve-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+							<iconify-icon class="text-4xl" icon="line-md:monitor-mutlple"></iconify-icon>
+							<span class="font-bold text-2xl">EVE</span>
+						</button>
+						<button id="auto-eve-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+							<iconify-icon class="text-4xl" icon="line-md:loading-twotone-loop"></iconify-icon>
+							<span class="font-bold text-xm">AUTO-EVE</span>
+						</button>
+						<button id="replay-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+							<iconify-icon class="text-4xl" icon="line-md:play"></iconify-icon>
+							<span class="font-bold text-2xl">Replay</span>
+						</button>
+					</div>
+				</section>
 
-			<div id="endgame-actions" class="flex justify-center gap-4 mt-6 h-16 opacity-0 transition-opacity duration-500 pointer-events-none">
-				<button id="restart-button" class="btn btn-circle btn-lg">
-					<iconify-icon class="text-2xl" icon="line-md:rotate-270"></iconify-icon>
-				</button>
-				<button id="home-button" class="btn btn-circle btn-lg">
-					<iconify-icon class="text-2xl" icon="line-md:home-md"></iconify-icon>
-				</button>
-			</div>
+				<!-- 游戏主界面 -->
+				<section id="game-view" class="view-section hidden">
+					<!-- 重构后的回合指示器与AI控制区域 -->
+					<div id="turn-indicator" class="flex justify-around items-center gap-4 mb-4 h-16">
+						<!-- X 玩家区域 -->
+						<div id="player-control-x" class="flex flex-col items-center gap-2">
+							<div id="turn-x" class="transition-all duration-300">
+								<iconify-icon class="text-5xl" icon="line-md:close" style="color: #f87171;"></iconify-icon>
+							</div>
+							<!-- EVE模式下X的控制按钮, 默认隐藏 -->
+							<div id="eve-controls-x" class="flex gap-2 hidden">
+								<button id="import-x-button" class="btn btn-xs btn-ghost btn-circle"><iconify-icon icon="line-md:upload-outline" class="text-lg"></iconify-icon></button>
+								<button id="export-x-button" class="btn btn-xs btn-ghost btn-circle"><iconify-icon icon="line-md:download-outline" class="text-lg"></iconify-icon></button>
+							</div>
+						</div>
+
+						<!-- 回合数字显示 -->
+						<div id="move-count-display" class="bg-base-300 text-base-content px-4 py-2 rounded-full text-lg font-bold z-10 shadow-md">0</div>
+
+						<!-- O 玩家区域 -->
+						<div id="player-control-o" class="flex flex-col items-center gap-2">
+							<div id="turn-o" class="transition-all duration-300">
+								<iconify-icon class="text-5xl" icon="line-md:circle" style="color: #60a5fa;"></iconify-icon>
+							</div>
+							<!-- EVE模式下O的控制按钮, 默认隐藏 -->
+							<div id="eve-controls-o" class="flex gap-2 hidden">
+								<button id="import-o-button" class="btn btn-xs btn-ghost btn-circle"><iconify-icon icon="line-md:upload-outline" class="text-lg"></iconify-icon></button>
+								<button id="export-o-button" class="btn btn-xs btn-ghost btn-circle"><iconify-icon icon="line-md:download-outline" class="text-lg"></iconify-icon></button>
+							</div>
+						</div>
+					</div>
+
+					<div id="board-container" class="relative">
+						<div id="game-board" class="grid grid-cols-3 gap-2 absolute inset-0" style="pointer-events: none;"></div>
+						<svg id="winning-line-svg" class="absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 120 120"></svg>
+					</div>
+
+					<!-- PVP控制面板 -->
+					<div id="pvp-controls" class="pvp-controls control-panel hidden">
+						<div class="flex justify-between items-center">
+							<div class="flex gap-2">
+								<button id="exit-game-button" class="btn btn-sm btn-ghost btn-circle js-exit-game">
+									<iconify-icon icon="line-md:logout" class="text-lg"></iconify-icon>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- PVE控制面板 -->
+					<div id="pve-controls" class="pve-controls control-panel hidden">
+						<div class="flex justify-between items-center mb-2">
+							<div class="flex gap-2">
+								<button id="import-pve-ai-button" class="btn btn-sm btn-ghost btn-circle"><iconify-icon icon="line-md:upload-outline" class="text-lg"></iconify-icon></button>
+								<button id="exit-game-button-pve" class="btn btn-sm btn-ghost btn-circle js-exit-game">
+									<iconify-icon icon="line-md:logout" class="text-lg"></iconify-icon>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- EVE控制面板 -->
+					<div id="eve-controls" class="eve-controls control-panel hidden">
+						<div class="flex justify-between items-center mb-2">
+							<div class="flex gap-2">
+								<button id="exit-game-button-eve" class="btn btn-sm btn-ghost btn-circle js-exit-game">
+									<iconify-icon icon="line-md:logout" class="text-lg"></iconify-icon>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Auto-EVE控制面板 -->
+					<div id="auto-eve-controls" class="auto-eve-controls control-panel hidden">
+						<div class="flex justify-between items-center">
+							<div class="flex gap-2">
+								<button id="import-network-button" class="btn btn-sm btn-ghost btn-circle"><iconify-icon icon="line-md:upload-outline" class="text-lg"></iconify-icon></button>
+								<button id="export-best-button" class="btn btn-sm btn-ghost btn-circle"><iconify-icon icon="line-md:download-outline" class="text-lg"></iconify-icon></button>
+								<button id="toggle-animation-button" class="btn btn-sm btn-ghost btn-circle"><iconify-icon icon="line-md:pause" class="text-lg"></iconify-icon></button>
+								<button id="next-game-button" class="btn btn-sm btn-ghost btn-circle"><iconify-icon icon="line-md:chevron-double-right" class="text-lg"></iconify-icon></button>
+								<button id="restart-auto-eve-button" class="btn btn-sm btn-ghost btn-circle"><iconify-icon icon="line-md:rotate-270" class="text-lg"></iconify-icon></button>
+								<button id="exit-auto-eve-button" class="btn btn-sm btn-ghost btn-circle js-exit-game"><iconify-icon icon="line-md:logout" class="text-lg"></iconify-icon></button>
+							</div>
+						</div>
+						<div class="progress-container">
+							<div id="auto-eve-progress" class="progress-bar"></div>
+						</div>
+						<div class="stats stats-vertical lg:stats-horizontal shadow w-full mb-4">
+							<div class="stat">
+								<div class="stat-figure text-primary">
+									<iconify-icon icon="line-md:account-multiple"></iconify-icon>
+								</div>
+								<div class="stat-title">Population</div>
+								<div class="stat-value text-lg" id="population-size">0</div>
+							</div>
+							<div class="stat">
+								<div class="stat-figure text-secondary">
+									<iconify-icon icon="line-md:sword"></iconify-icon>
+								</div>
+								<div class="stat-title">Battles</div>
+								<div class="stat-value text-lg" id="battle-count">0</div>
+							</div>
+							<div class="stat">
+								<div class="stat-figure text-accent">
+									<iconify-icon icon="line-md:trophy"></iconify-icon>
+								</div>
+								<div class="stat-title">Best Fitness</div>
+								<div class="stat-value text-lg" id="best-fitness">0</div>
+							</div>
+							<div class="stat">
+								<div class="stat-figure text-info">
+									<iconify-icon icon="line-md:time-twotone-reverse"></iconify-icon>
+								</div>
+								<div class="stat-title">Generation</div>
+								<div class="stat-value text-lg" id="generation-count">0</div>
+							</div>
+							<div class="stat">
+								<div class="stat-figure text-warning">
+									<iconify-icon icon="line-md:chart-line"></iconify-icon>
+								</div>
+								<div class="stat-title">Avg Fitness</div>
+								<div class="stat-value text-lg" id="average-fitness">0</div>
+							</div>
+							<div class="stat">
+								<div class="stat-figure text-success">
+									<iconify-icon icon="line-md:brain"></iconify-icon>
+								</div>
+								<div class="stat-title">Network</div>
+								<div class="stat-value text-sm">
+									<div id="network-complexity-nodes">0</div>
+									<div class="stat-desc">nodes</div>
+								</div>
+								<div class="stat-value text-sm">
+									<div id="network-complexity-connections">0</div>
+									<div class="stat-desc">connections</div>
+								</div>
+							</div>
+							<div class="stat">
+								<div class="stat-figure text-info">
+									<iconify-icon icon="line-md:hourglass"></iconify-icon>
+								</div>
+								<div class="stat-title">Avg Game Length</div>
+								<div class="stat-value text-lg" id="avg-game-length">0</div>
+							</div>
+						</div>
+					</div>
+
+					<div id="endgame-actions" class="flex justify-center gap-4 mt-6 h-16 opacity-0 transition-opacity duration-500 pointer-events-none">
+						<button id="restart-button" class="btn btn-circle btn-lg">
+							<iconify-icon class="text-2xl" icon="line-md:rotate-270"></iconify-icon>
+						</button>
+						<button id="home-button" class="btn btn-circle btn-lg js-exit-game">
+							<iconify-icon class="text-2xl" icon="line-md:home-md"></iconify-icon>
+						</button>
+						<button id="export-history-button" class="btn btn-circle btn-lg hidden">
+							<iconify-icon class="text-2xl" icon="line-md:download-loop"></iconify-icon>
+						</button>
+					</div>
+				</section>
+
+				<!-- 训练界面 -->
+				<section id="training-view" class="view-section hidden">
+					<h2>AI Training</h2>
+					<div id="training-progress"></div>
+				</section>
+			</main>
+
+			<dialog id="confirm_reset_modal" class="modal">
+				<div class="modal-box bg-red-500 text-white text-center">
+					<h3 class="font-bold text-lg flex items-center justify-center gap-2">
+						<iconify-icon icon="line-md:alert" class="text-2xl"></iconify-icon>
+					</h3>
+					<div class="modal-action flex justify-center gap-4">
+						<button id="confirm-reset-button" class="btn btn-error btn-circle">
+							<iconify-icon icon="line-md:confirm"></iconify-icon>
+						</button>
+						<button id="cancel-reset-button" class="btn btn-ghost btn-circle">
+							<iconify-icon icon="line-md:close"></iconify-icon>
+						</button>
+					</div>
+				</div>
+			</dialog>
+
+			<!-- PVE选边Modal -->
+			<dialog id="pve_side_modal" class="modal">
+				<div class="modal-box text-center">
+					<div class="flex justify-center items-center gap-8 py-4">
+						<button id="pve-play-as-x" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+							<iconify-icon class="text-5xl" icon="line-md:close" style="color: #f87171;"></iconify-icon>
+						</button>
+						<button id="pve-play-as-o" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+							<iconify-icon class="text-5xl" icon="line-md:circle" style="color: #60a5fa;"></iconify-icon>
+						</button>
+					</div>
+				</div>
+			</dialog>
+
+			<!-- Replay选择Modal -->
+			<dialog id="replay_modal" class="modal">
+				<div class="modal-box text-center">
+					<div class="flex justify-center items-center gap-8 py-4">
+						<button id="replay-last-game-modal-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+							<iconify-icon class="text-5xl" icon="line-md:play"></iconify-icon>
+						</button>
+						<button id="upload-replay-modal-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+							<iconify-icon class="text-5xl" icon="line-md:upload-loop"></iconify-icon>
+						</button>
+					</div>
+				</div>
+			</dialog>
+		</div>
+
+		<!-- Right AI Visualization -->
+		<div id="ai-visualization-right" class="flex-1 flex justify-center items-center p-4 hidden">
+			<!-- 模型可视化将被动态注入这里 -->
 		</div>
 	</div>
 
-	<script type="module">
-		import anime from 'https://cdn.jsdelivr.net/npm/animejs/lib/anime.es.js'
-
-		// DOM 元素
-		const modeSelectionView = document.getElementById('mode-selection')
-		const gameView = document.getElementById('game-view')
-		const boardDisplay = document.getElementById('board')
-		const turnX = document.getElementById('turn-x')
-		const turnO = document.getElementById('turn-o')
-		const endgameActions = document.getElementById('endgame-actions')
-		const winningLineSVG = document.getElementById('winning-line-svg')
-
-		const pvpButton = document.getElementById('pvp-button')
-		const pvaButton = document.getElementById('pva-button')
-		const restartButton = document.getElementById('restart-button')
-		const homeButton = document.getElementById('home-button')
-
-		// 游戏状态
-		let gameActive = false, currentPlayer = 'X', gameMode = 'pvp'
-		const gameState = Array(9).fill('')
-		const playerXMoves = [], playerOMoves = []
-
-		const winningConditions = [
-			[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
-			[1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]
-		]
-
-		const startGame = (mode) => {
-			gameMode = mode
-			gameActive = true
-			currentPlayer = 'X'
-			gameState.fill('')
-			playerXMoves.length = 0
-			playerOMoves.length = 0
-
-			updateTurnIndicator()
-			boardDisplay.innerHTML = ''
-			winningLineSVG.innerHTML = ''
-			endgameActions.classList.add('opacity-0', 'pointer-events-none')
-			boardDisplay.style.pointerEvents = 'auto'
-
-			for (let i = 0; i < 9; i++) {
-				const cell = document.createElement('div')
-				cell.className = 'board-cell bg-base-300 flex justify-center items-center cursor-pointer rounded-md empty-cell'
-				cell.setAttribute('data-cell-index', i)
-				cell.addEventListener('click', handleCellClick)
-				boardDisplay.appendChild(cell)
-			}
-
-			modeSelectionView.classList.add('hidden')
-			gameView.classList.remove('hidden')
-		}
-
-		const handleCellClick = (e) => {
-			const cell = e.currentTarget
-			const cellIndex = parseInt(cell.getAttribute('data-cell-index'))
-			if (gameState[cellIndex] !== '' || !gameActive) return
-
-			handlePlayerMove(cellIndex)
-
-			if (gameMode === 'pve' && gameActive && currentPlayer === 'O') {
-				boardDisplay.style.pointerEvents = 'none'
-				setTimeout(() => { handleAIMove(); boardDisplay.style.pointerEvents = 'auto' }, 600)
-			}
-		}
-
-		const updatePieceOpacity = (movesQueue) => {
-			const opacities = [0.4, 0.7, 1.0]
-			movesQueue.forEach((cellIndex, i) => {
-				const cell = document.querySelector(`[data-cell-index='${cellIndex}']`)
-				if (cell) {
-					const opacityIndex = opacities.length - movesQueue.length + i
-					cell.style.opacity = opacities[opacityIndex]
-				}
-			})
-		}
-
-		const handlePlayerMove = (cellIndex) => {
-			const cell = document.querySelector(`[data-cell-index='${cellIndex}']`)
-			gameState[cellIndex] = currentPlayer
-			cell.classList.remove('empty-cell')
-
-			drawPiece(cell, currentPlayer)
-
-			const currentMoves = currentPlayer === 'X' ? playerXMoves : playerOMoves
-			currentMoves.push(cellIndex)
-
-			if (currentMoves.length > 3) {
-				const oldestMoveIndex = currentMoves.shift()
-				gameState[oldestMoveIndex] = ''
-				const oldCell = document.querySelector(`[data-cell-index='${oldestMoveIndex}']`)
-
-				anime({
-					targets: oldCell, opacity: 0, duration: 400, easing: 'easeOutQuad',
-					complete: () => {
-						oldCell.innerHTML = ''
-						oldCell.style.opacity = '1'
-						oldCell.classList.add('empty-cell')
-					}
-				})
-			}
-
-			updatePieceOpacity(currentMoves)
-			handleResultValidation()
-		}
-
-		const drawPiece = (cell, player) => {
-			const iconName = player === 'X' ? 'line-md:close' : 'line-md:circle'
-			const color = player === 'X' ? '#f87171' : '#60a5fa'
-
-			const iconEl = document.createElement('iconify-icon')
-			iconEl.className = 'piece-icon'
-			iconEl.setAttribute('icon', iconName)
-			iconEl.style.color = color
-			cell.innerHTML = ''
-			cell.appendChild(iconEl)
-		}
-
-		const handleAIMove = () => {
-			let bestMove = -1
-			for (let i = 0; i < 9; i++)  if (gameState[i] === '') { gameState[i] = 'O'; if (checkWinCondition()) bestMove = i; gameState[i] = ''; if (bestMove !== -1) break }
-			if (bestMove === -1) for (let i = 0; i < 9; i++)  if (gameState[i] === '') { gameState[i] = 'X'; if (checkWinCondition()) bestMove = i; gameState[i] = ''; if (bestMove !== -1) break }
-			if (bestMove === -1) { const empty = gameState.map((c, i) => c === '' ? i : null).filter(v => v !== null); if (empty.length > 0) bestMove = empty[Math.floor(Math.random() * empty.length)] }
-			if (bestMove !== -1) handlePlayerMove(bestMove)
-		}
-
-		const checkWinCondition = () => {
-			for (let i = 0; i < winningConditions.length; i++) {
-				const cond = winningConditions[i]
-				if (gameState[cond[0]] && gameState[cond[0]] === gameState[cond[1]] && gameState[cond[1]] === gameState[cond[2]])
-					return { winner: gameState[cond[0]], condition: cond, index: i }
-			}
-			return null
-		}
-
-		const handleResultValidation = () => {
-			const winResult = checkWinCondition()
-			if (winResult) endGame(winResult)
-			else handlePlayerChange()
-		}
-
-		const endGame = (result) => {
-			gameActive = false
-			boardDisplay.style.pointerEvents = 'none'
-
-			if (result && result.winner) {
-				drawWinningLine(result.index)
-				result.condition.forEach(index => {
-					document.querySelector(`[data-cell-index='${index}']`).classList.add('winning-cell')
-				})
-			}
-
-			setTimeout(() => {
-				endgameActions.classList.remove('opacity-0', 'pointer-events-none')
-			}, 800)
-		}
-
-		const drawWinningLine = (conditionIndex) => {
-			const coords = [
-				{ x1: -10, y1: 20, x2: 130, y2: 20 }, { x1: -10, y1: 60, x2: 130, y2: 60 }, { x1: -10, y1: 100, x2: 130, y2: 100 },
-				{ x1: 20, y1: -10, x2: 20, y2: 130 }, { x1: 60, y1: -10, x2: 60, y2: 130 }, { x1: 100, y1: -10, x2: 100, y2: 130 },
-				{ x1: -10, y1: -10, x2: 130, y2: 130 }, { x1: 130, y1: -10, x2: -10, y2: 130 }
-			]
-			const c = coords[conditionIndex]
-			const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-			path.setAttribute('id', 'winning-path')
-			path.setAttribute('d', `M ${c.x1} ${c.y1} L ${c.x2} ${c.y2}`)
-			winningLineSVG.appendChild(path)
-
-			anime({ targets: path, strokeDashoffset: [anime.setDashoffset, 0], easing: 'easeInOutSine', duration: 800 })
-		}
-
-		const handlePlayerChange = () => {
-			currentPlayer = currentPlayer === 'X' ? 'O' : 'X'
-			updateTurnIndicator()
-		}
-
-		const updateTurnIndicator = () => {
-			turnX.classList.toggle('current-turn-indicator', currentPlayer === 'X')
-			turnO.classList.toggle('current-turn-indicator', currentPlayer === 'O')
-		}
-
-		const resetToModeSelection = () => {
-			gameView.classList.add('hidden')
-			modeSelectionView.classList.remove('hidden')
-		}
-
-		// Event Listeners
-		pvpButton.addEventListener('click', () => startGame('pvp'))
-		pvaButton.addEventListener('click', () => startGame('pve'))
-		restartButton.addEventListener('click', () => startGame(gameMode))
-		homeButton.addEventListener('click', resetToModeSelection)
-	</script>
+	<script type="module" src="main.mjs"></script>
 	<footer class="fixed bottom-4 w-full text-center text-xs text-gray-500">
 		<p>Generated by <a class="link" href="https://github.com/steve02081504/fount" target="_blank">fount</a></p>
 	</footer>
