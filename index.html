@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="darkreader-lock">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OXO</title>
+	<link href="https://cdn.jsdelivr.net/npm/daisyui/themes.css" rel="stylesheet" type="text/css" crossorigin="anonymous" />
+	<link href="https://cdn.jsdelivr.net/npm/daisyui/daisyui.css" rel="stylesheet" type="text/css" crossorigin="anonymous" />
+	<script src="https://cdn.jsdelivr.net/npm/@unocss/runtime" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/iconify-icon/dist/iconify-icon.min.js"></script>
+
+	<style>
+		/* 自定义动画和样式 */
+		@keyframes pulse {
+			50% {
+				opacity: .6;
+				transform: scale(1.1);
+			}
+		}
+
+		.current-turn-indicator {
+			animation: pulse 2s infinite;
+		}
+
+		.board-cell {
+			width: 100%;
+			height: 100%;
+			transition: all 0.3s ease-in-out;
+			aspect-ratio: 1/1;
+		}
+
+		.board-cell.winning-cell iconify-icon {
+			transform: scale(1.1);
+			color: #34d399;
+			/* 胜利时的颜色 */
+		}
+
+		.board-cell:hover:not(.empty-cell) {
+			cursor: not-allowed;
+		}
+
+		/* 棋子图标样式 */
+		.piece-icon {
+			font-size: clamp(3rem, 10vw, 4rem);
+			stroke-width: 8;
+			stroke-linecap: round;
+		}
+
+		/* 胜利划线路径样式 */
+		#winning-path {
+			stroke: #34d399;
+			stroke-width: 5;
+			stroke-linecap: round;
+			fill: none;
+		}
+
+		#board-container {
+			width: 100%;
+			max-width: 360px;
+			height: auto;
+			aspect-ratio: 1/1;
+			margin: 0 auto;
+		}
+
+		@media (min-width: 768px) {
+			#board-container {
+				max-width: 400px;
+			}
+
+			.piece-icon {
+				font-size: 4.5rem;
+			}
+		}
+	</style>
+</head>
+
+<body class="flex flex-col justify-center items-center min-h-screen bg-base-200 font-sans select-none">
+	<div id="game-container" class="p-8 rounded-lg shadow-2xl bg-base-100 text-center w-full max-w-md">
+		<!-- 模式选择界面 -->
+		<div id="mode-selection" class="flex justify-around items-center h-48">
+			<button id="pvp-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+				<iconify-icon class="text-4xl" icon="line-md:emoji-smile"></iconify-icon>
+				<span class="font-bold text-2xl">PVP</span>
+			</button>
+			<button id="pva-button" class="btn btn-ghost h-32 w-32 rounded-full flex flex-col gap-2">
+				<iconify-icon class="text-4xl" icon="line-md:computer"></iconify-icon>
+				<span class="font-bold text-2xl">PVE</span>
+			</button>
+		</div>
+
+		<!-- 游戏主界面 -->
+		<div id="game-view" class="hidden">
+			<div id="turn-indicator" class="flex justify-center items-center gap-8 mb-4 h-16">
+				<div id="turn-x" class="transition-all duration-300">
+					<iconify-icon class="text-5xl" icon="line-md:close" style="color: #f87171;"></iconify-icon>
+				</div>
+				<div id="turn-o" class="transition-all duration-300">
+					<iconify-icon class="text-5xl" icon="line-md:circle" style="color: #60a5fa;"></iconify-icon>
+				</div>
+			</div>
+
+			<div id="board-container" class="relative">
+				<div id="board" class="grid grid-cols-3 gap-2 absolute inset-0"></div>
+				<svg id="winning-line-svg" class="absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 120 120"></svg>
+			</div>
+
+			<div id="endgame-actions" class="flex justify-center gap-4 mt-6 h-16 opacity-0 transition-opacity duration-500 pointer-events-none">
+				<button id="restart-button" class="btn btn-circle btn-lg">
+					<iconify-icon class="text-2xl" icon="line-md:rotate-270"></iconify-icon>
+				</button>
+				<button id="home-button" class="btn btn-circle btn-lg">
+					<iconify-icon class="text-2xl" icon="line-md:home-md"></iconify-icon>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<script type="module">
+		import anime from 'https://cdn.jsdelivr.net/npm/animejs/lib/anime.es.js'
+
+		// DOM 元素
+		const modeSelectionView = document.getElementById('mode-selection')
+		const gameView = document.getElementById('game-view')
+		const boardDisplay = document.getElementById('board')
+		const turnX = document.getElementById('turn-x')
+		const turnO = document.getElementById('turn-o')
+		const endgameActions = document.getElementById('endgame-actions')
+		const winningLineSVG = document.getElementById('winning-line-svg')
+
+		const pvpButton = document.getElementById('pvp-button')
+		const pvaButton = document.getElementById('pva-button')
+		const restartButton = document.getElementById('restart-button')
+		const homeButton = document.getElementById('home-button')
+
+		// 游戏状态
+		let gameActive = false, currentPlayer = 'X', gameMode = 'pvp'
+		const gameState = Array(9).fill('')
+		const playerXMoves = [], playerOMoves = []
+
+		const winningConditions = [
+			[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
+			[1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]
+		]
+
+		const startGame = (mode) => {
+			gameMode = mode
+			gameActive = true
+			currentPlayer = 'X'
+			gameState.fill('')
+			playerXMoves.length = 0
+			playerOMoves.length = 0
+
+			updateTurnIndicator()
+			boardDisplay.innerHTML = ''
+			winningLineSVG.innerHTML = ''
+			endgameActions.classList.add('opacity-0', 'pointer-events-none')
+			boardDisplay.style.pointerEvents = 'auto'
+
+			for (let i = 0; i < 9; i++) {
+				const cell = document.createElement('div')
+				cell.className = 'board-cell bg-base-300 flex justify-center items-center cursor-pointer rounded-md empty-cell'
+				cell.setAttribute('data-cell-index', i)
+				cell.addEventListener('click', handleCellClick)
+				boardDisplay.appendChild(cell)
+			}
+
+			modeSelectionView.classList.add('hidden')
+			gameView.classList.remove('hidden')
+		}
+
+		const handleCellClick = (e) => {
+			const cell = e.currentTarget
+			const cellIndex = parseInt(cell.getAttribute('data-cell-index'))
+			if (gameState[cellIndex] !== '' || !gameActive) return
+
+			handlePlayerMove(cellIndex)
+
+			if (gameMode === 'pve' && gameActive && currentPlayer === 'O') {
+				boardDisplay.style.pointerEvents = 'none'
+				setTimeout(() => { handleAIMove(); boardDisplay.style.pointerEvents = 'auto' }, 600)
+			}
+		}
+
+		const updatePieceOpacity = (movesQueue) => {
+			const opacities = [0.4, 0.7, 1.0]
+			movesQueue.forEach((cellIndex, i) => {
+				const cell = document.querySelector(`[data-cell-index='${cellIndex}']`)
+				if (cell) {
+					const opacityIndex = opacities.length - movesQueue.length + i
+					cell.style.opacity = opacities[opacityIndex]
+				}
+			})
+		}
+
+		const handlePlayerMove = (cellIndex) => {
+			const cell = document.querySelector(`[data-cell-index='${cellIndex}']`)
+			gameState[cellIndex] = currentPlayer
+			cell.classList.remove('empty-cell')
+
+			drawPiece(cell, currentPlayer)
+
+			const currentMoves = currentPlayer === 'X' ? playerXMoves : playerOMoves
+			currentMoves.push(cellIndex)
+
+			if (currentMoves.length > 3) {
+				const oldestMoveIndex = currentMoves.shift()
+				gameState[oldestMoveIndex] = ''
+				const oldCell = document.querySelector(`[data-cell-index='${oldestMoveIndex}']`)
+
+				anime({
+					targets: oldCell, opacity: 0, duration: 400, easing: 'easeOutQuad',
+					complete: () => {
+						oldCell.innerHTML = ''
+						oldCell.style.opacity = '1'
+						oldCell.classList.add('empty-cell')
+					}
+				})
+			}
+
+			updatePieceOpacity(currentMoves)
+			handleResultValidation()
+		}
+
+		const drawPiece = (cell, player) => {
+			const iconName = player === 'X' ? 'line-md:close' : 'line-md:circle'
+			const color = player === 'X' ? '#f87171' : '#60a5fa'
+
+			const iconEl = document.createElement('iconify-icon')
+			iconEl.className = 'piece-icon'
+			iconEl.setAttribute('icon', iconName)
+			iconEl.style.color = color
+			cell.innerHTML = ''
+			cell.appendChild(iconEl)
+		}
+
+		const handleAIMove = () => {
+			let bestMove = -1
+			for (let i = 0; i < 9; i++)  if (gameState[i] === '') { gameState[i] = 'O'; if (checkWinCondition()) bestMove = i; gameState[i] = ''; if (bestMove !== -1) break }
+			if (bestMove === -1) for (let i = 0; i < 9; i++)  if (gameState[i] === '') { gameState[i] = 'X'; if (checkWinCondition()) bestMove = i; gameState[i] = ''; if (bestMove !== -1) break }
+			if (bestMove === -1) { const empty = gameState.map((c, i) => c === '' ? i : null).filter(v => v !== null); if (empty.length > 0) bestMove = empty[Math.floor(Math.random() * empty.length)] }
+			if (bestMove !== -1) handlePlayerMove(bestMove)
+		}
+
+		const checkWinCondition = () => {
+			for (let i = 0; i < winningConditions.length; i++) {
+				const cond = winningConditions[i]
+				if (gameState[cond[0]] && gameState[cond[0]] === gameState[cond[1]] && gameState[cond[1]] === gameState[cond[2]])
+					return { winner: gameState[cond[0]], condition: cond, index: i }
+			}
+			return null
+		}
+
+		const handleResultValidation = () => {
+			const winResult = checkWinCondition()
+			if (winResult) endGame(winResult)
+			else handlePlayerChange()
+		}
+
+		const endGame = (result) => {
+			gameActive = false
+			boardDisplay.style.pointerEvents = 'none'
+
+			if (result && result.winner) {
+				drawWinningLine(result.index)
+				result.condition.forEach(index => {
+					document.querySelector(`[data-cell-index='${index}']`).classList.add('winning-cell')
+				})
+			}
+
+			setTimeout(() => {
+				endgameActions.classList.remove('opacity-0', 'pointer-events-none')
+			}, 800)
+		}
+
+		const drawWinningLine = (conditionIndex) => {
+			const coords = [
+				{ x1: -10, y1: 20, x2: 130, y2: 20 }, { x1: -10, y1: 60, x2: 130, y2: 60 }, { x1: -10, y1: 100, x2: 130, y2: 100 },
+				{ x1: 20, y1: -10, x2: 20, y2: 130 }, { x1: 60, y1: -10, x2: 60, y2: 130 }, { x1: 100, y1: -10, x2: 100, y2: 130 },
+				{ x1: -10, y1: -10, x2: 130, y2: 130 }, { x1: 130, y1: -10, x2: -10, y2: 130 }
+			]
+			const c = coords[conditionIndex]
+			const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+			path.setAttribute('id', 'winning-path')
+			path.setAttribute('d', `M ${c.x1} ${c.y1} L ${c.x2} ${c.y2}`)
+			winningLineSVG.appendChild(path)
+
+			anime({ targets: path, strokeDashoffset: [anime.setDashoffset, 0], easing: 'easeInOutSine', duration: 800 })
+		}
+
+		const handlePlayerChange = () => {
+			currentPlayer = currentPlayer === 'X' ? 'O' : 'X'
+			updateTurnIndicator()
+		}
+
+		const updateTurnIndicator = () => {
+			turnX.classList.toggle('current-turn-indicator', currentPlayer === 'X')
+			turnO.classList.toggle('current-turn-indicator', currentPlayer === 'O')
+		}
+
+		const resetToModeSelection = () => {
+			gameView.classList.add('hidden')
+			modeSelectionView.classList.remove('hidden')
+		}
+
+		// Event Listeners
+		pvpButton.addEventListener('click', () => startGame('pvp'))
+		pvaButton.addEventListener('click', () => startGame('pve'))
+		restartButton.addEventListener('click', () => startGame(gameMode))
+		homeButton.addEventListener('click', resetToModeSelection)
+	</script>
+	<footer class="fixed bottom-4 w-full text-center text-xs text-gray-500">
+		<p>Generated by <a class="link" href="https://github.com/steve02081504/fount" target="_blank">fount</a></p>
+	</footer>
+</body>
+
+</html>
