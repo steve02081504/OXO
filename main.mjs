@@ -1,5 +1,5 @@
 import { initializeEventListeners } from './app/event-bindings.mjs'
-import { PVPMode, PVEMode, EVEMode, AutoEVEMode } from './game/game-modes/index.mjs'
+import { PVPMode, PVEMode, EVEMode, AutoEVEMode, ReplayMode } from './game/game-modes/index.mjs'
 import { GameManager } from './game/index.mjs'
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	gameManager.modeManager.registerMode('pve', new PVEMode())
 	gameManager.modeManager.registerMode('eve', new EVEMode())
 	gameManager.modeManager.registerMode('auto-eve', new AutoEVEMode())
+	gameManager.modeManager.registerMode('replay', new ReplayMode())
 
 	// 将事件绑定逻辑委托出去
 	initializeEventListeners(gameManager)
@@ -37,5 +38,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 		await gameManager.trainingManager.saveCurrentState()
 	})
 
-	gameManager.uiManager.showView('mode-selection')
+	const urlParams = new URLSearchParams(window.location.search)
+	const mode = urlParams.get('mode')
+	if (mode) {
+		const options = {}
+		for (const [key, value] of urlParams.entries()) {
+			if (options[key]) {
+				if (Array.isArray(options[key]))
+					options[key].push(value)
+				else
+					options[key] = [options[key], value]
+			} else
+				options[key] = value
+		}
+		await gameManager.startGame(mode, options)
+	} else
+		gameManager.uiManager.showView('mode-selection')
 })

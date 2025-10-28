@@ -1,11 +1,14 @@
 import { confirmResetButton, confirmResetModal } from '../../ui/DOM.mjs'
+import { NeuralNetwork } from '../../neural/neural-network.mjs'
 import { NeuralNetworkVisualizer } from '../../ui/neural-network-visualizer.mjs'
 
 import { BaseMode } from './base-mode.mjs'
 
 export class AutoEVEMode extends BaseMode {
 	async initialize(gameManager, options) {
+		this.gameManager = gameManager
 		await super.initialize(gameManager, options)
+
 		this.gameManager.uiManager.hideAllControls()
 		this.gameManager.uiManager.showView('game-view')
 		this.gameManager.uiManager.showAutoEveControls()
@@ -33,6 +36,15 @@ export class AutoEVEMode extends BaseMode {
 
 		this.updateAutoEveStats()
 		this.runUiLoop()
+	}
+
+	async handleUrlParams(options) {
+		const urls = Array.isArray(options.add) ? options.add : (options.add ? [options.add] : [])
+		for (const url of urls) {
+			const network = await NeuralNetwork.fromUrl(url)
+			if (network)
+				this.gameManager.gaInstance.population.push(network)
+		}
 	}
 
 	async handleRestartTraining() {
