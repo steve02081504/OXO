@@ -5,7 +5,6 @@ import { BaseMode } from './base-mode.mjs'
 
 export class EVEMode extends BaseMode {
 	async initialize(gameManager, options = {}) {
-		this.gameManager = gameManager
 		this.playerAIs = { X: null, O: null }
 		await super.initialize(gameManager, options)
 

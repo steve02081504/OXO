@@ -1,5 +1,3 @@
-import { AIFactory } from '../../ai/index.mjs'
-import { Network } from '../../neural/index.mjs'
 
 export class BaseMode {
 	constructor() { }

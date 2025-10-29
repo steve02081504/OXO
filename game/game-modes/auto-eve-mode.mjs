@@ -1,12 +1,11 @@
-import { confirmResetButton, confirmResetModal } from '../../ui/DOM.mjs'
 import { NeuralNetwork } from '../../neural/neural-network.mjs'
+import { confirmResetButton, confirmResetModal } from '../../ui/DOM.mjs'
 import { NeuralNetworkVisualizer } from '../../ui/neural-network-visualizer.mjs'
 
 import { BaseMode } from './base-mode.mjs'
 
 export class AutoEVEMode extends BaseMode {
 	async initialize(gameManager, options) {
-		this.gameManager = gameManager
 		await super.initialize(gameManager, options)
 
 		this.gameManager.uiManager.hideAllControls()

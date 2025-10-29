@@ -6,7 +6,6 @@ import { BaseMode } from './base-mode.mjs'
 
 export class PVEMode extends BaseMode {
 	async initialize(gameManager, options) {
-		this.gameManager = gameManager
 		this.playerAIs = { X: null, O: null }
 		this.playerSide = 'X'
 		await super.initialize(gameManager, options)
@@ -40,20 +39,19 @@ export class PVEMode extends BaseMode {
 			return this.playerAIs[opponentSide]
 
 		const gaInstance = this.gameManager.gaInstance
-			const population = gaInstance.population
-			if (population.length > 0) {
-				const traditionalAI = new TraditionalAI()
-				const challengerNetwork = population.reduce((prev, current) => prev.fitness > current.fitness ? prev : current)
-				if (challengerNetwork) {
-					const challengerAI = AIFactory.createNeuralAI(challengerNetwork)
-					const { winner } = await runGameSimulation(challengerAI, traditionalAI, GameConfig.ai.training.silentBattleMaxMoves)
-					if (winner === 'X') {
-						console.log('PVE AI is a Neural Network champion!')
-						return challengerAI
-					} else {
-						console.log('PVE AI is the Traditional AI.')
-						return traditionalAI
-					}
+		const population = gaInstance.population
+		if (population.length > 0) {
+			const traditionalAI = new TraditionalAI()
+			const challengerNetwork = population.reduce((prev, current) => prev.fitness > current.fitness ? prev : current)
+			if (challengerNetwork) {
+				const challengerAI = AIFactory.createNeuralAI(challengerNetwork)
+				const { winner } = await runGameSimulation(challengerAI, traditionalAI, GameConfig.ai.training.silentBattleMaxMoves)
+				if (winner === 'X') {
+					console.log('PVE AI is a Neural Network champion!')
+					return challengerAI
+				} else {
+					console.log('PVE AI is the Traditional AI.')
+					return traditionalAI
 				}
 			}
 		}

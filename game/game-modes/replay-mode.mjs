@@ -9,15 +9,13 @@ export class ReplayMode extends BaseMode {
 	}
 
 	async handleUrlParams(options) {
-		if (options.replayUrl) {
-			try {
-				const response = await fetch(options.replayUrl)
-				if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-				const history = await response.json()
-				await this.gameManager.playHistory(history)
-			} catch (error) {
-				console.error(`Failed to load replay from ${options.replayUrl}:`, error)
-			}
+		if (options.replayUrl) try {
+			const response = await fetch(options.replayUrl)
+			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+			const history = await response.json()
+			await this.gameManager.playHistory(history)
+		} catch (error) {
+			console.error(`Failed to load replay from ${options.replayUrl}:`, error)
 		}
 	}
 }

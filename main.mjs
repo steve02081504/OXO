@@ -42,16 +42,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const mode = urlParams.get('mode')
 	if (mode) {
 		const options = {}
-		for (const [key, value] of urlParams.entries()) {
-			if (options[key]) {
-				if (Array.isArray(options[key]))
-					options[key].push(value)
-				else
-					options[key] = [options[key], value]
-			} else
+		for (const [key, value] of urlParams.entries())
+			if (options[key])
+				options[key] = [].concat(options[key], value)
+			else
 				options[key] = value
-		}
 		await gameManager.startGame(mode, options)
-	} else
-		gameManager.uiManager.showView('mode-selection')
+	} else gameManager.uiManager.showView('mode-selection')
 })
