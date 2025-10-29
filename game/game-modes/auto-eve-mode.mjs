@@ -39,7 +39,7 @@ export class AutoEVEMode extends BaseMode {
 	}
 
 	async handleUrlParams(options) {
-		const urls = Array.isArray(options.add) ? options.add : (options.add ? [options.add] : [])
+		const urls = [].concat(options.add || [])
 		for (const url of urls) {
 			const network = await NeuralNetwork.fromUrl(url)
 			if (network)
