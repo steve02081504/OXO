@@ -45,17 +45,17 @@ export class EVEMode extends BaseMode {
 	}
 
 	async handleUrlParams(options) {
-		if (options.aiXUrl) {
-			const network = await NeuralNetwork.fromUrl(options.aiXUrl)
-			if (network)
-				this.playerAIs.X = AIFactory.createNeuralAI(network)
+		const loadAndSetAI = async (player, url) => {
+			if (url) {
+				const network = await NeuralNetwork.fromUrl(url)
+				if (network) this.playerAIs[player] = AIFactory.createNeuralAI(network)
+			}
 		}
 
-		if (options.aiOUrl) {
-			const network = await NeuralNetwork.fromUrl(options.aiOUrl)
-			if (network)
-				this.playerAIs.O = AIFactory.createNeuralAI(network)
-		}
+		await Promise.all([
+			loadAndSetAI('X', options.XAIUrl),
+			loadAndSetAI('O', options.OAIUrl)
+		])
 	}
 
 	cleanup() {

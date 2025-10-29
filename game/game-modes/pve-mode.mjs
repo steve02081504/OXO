@@ -26,10 +26,9 @@ export class PVEMode extends BaseMode {
 	async handleUrlParams(options) {
 		this.playerSide = options.playerSide || 'X'
 
-		if (options.aiUrl) {
-			const network = await NeuralNetwork.fromUrl(options.aiUrl)
-			if (network)
-				this.playerAIs[this.playerSide === 'X' ? 'O' : 'X'] = AIFactory.createNeuralAI(network)
+		if (options.AIUrl) {
+			const network = await NeuralNetwork.fromUrl(options.AIUrl)
+			if (network) this.playerAIs[this.playerSide === 'X' ? 'O' : 'X'] = AIFactory.createNeuralAI(network)
 		}
 	}
 
