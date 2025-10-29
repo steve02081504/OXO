@@ -234,6 +234,18 @@ export class NeuralNetwork {
 		return network
 	}
 
+	static async fromUrl(url) {
+		try {
+			const response = await fetch(url)
+			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+			const networkData = await response.json()
+			return NeuralNetwork.fromJSON(networkData)
+		} catch (error) {
+			console.error(`Failed to load network from ${url}:`, error)
+			return null
+		}
+	}
+
 	clone() {
 		const clonedNetwork = new NeuralNetwork(this.config)
 		clonedNetwork.nodes.clear()

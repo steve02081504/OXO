@@ -1,4 +1,4 @@
-import { autoEveControlsElement, eveControlsO, eveControlsX, pveControlsElement, pvpControlsElement, endgameActionsElement, exportHistoryButton, turnXElement, turnOElement, aiVisualizationLeftElement, aiVisualizationRightElement, exitGameButtonPVE, confirmResetModal, eveControlsElement } from './DOM.mjs'
+import { autoEveControlsElement, eveControlsO, eveControlsX, pveControlsElement, pvpControlsElement, replayControlsElement, endgameActionsElement, exportHistoryButton, turnXElement, turnOElement, aiVisualizationLeftElement, aiVisualizationRightElement, exitGameButtonPVE, confirmResetModal, eveControlsElement } from './DOM.mjs'
 
 const exitGameButtons = document.querySelectorAll('.js-exit-game')
 const exitPVEButtons = [exitGameButtonPVE].filter(Boolean)
@@ -10,7 +10,8 @@ export class ViewController {
 			pvp: pvpControlsElement,
 			pve: pveControlsElement,
 			eve: [eveControlsElement, eveControlsX, eveControlsO],
-			'auto-eve': autoEveControlsElement
+			'auto-eve': autoEveControlsElement,
+			replay: replayControlsElement
 		}
 	}
 
@@ -106,6 +107,14 @@ export class ViewController {
 
 	hidePvpControls() {
 		pvpControlsElement.classList.remove('hidden')
+	}
+
+	showReplayControls() {
+		replayControlsElement.classList.remove('hidden')
+	}
+
+	hideReplayControls() {
+		replayControlsElement.classList.add('hidden')
 	}
 
 	showExitGameButton() {

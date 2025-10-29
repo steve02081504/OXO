@@ -107,6 +107,14 @@ export class UIManager {
 		this.viewController.hidePvpControls()
 	}
 
+	showReplayControls() {
+		this.viewController.showReplayControls()
+	}
+
+	hideReplayControls() {
+		this.viewController.hideReplayControls()
+	}
+
 	setBoardInteraction(enabled) {
 		this.boardRenderer.setBoardInteraction(enabled)
 	}
