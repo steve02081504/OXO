@@ -1,4 +1,4 @@
-import { initializeEventListeners } from './app/event-bindings.mjs'
+import { initializeEventListeners } from './app/ui-controller.mjs'
 import { PVPMode, PVEMode, EVEMode, AutoEVEMode, ReplayMode } from './game/game-modes/index.mjs'
 import { GameManager } from './game/index.mjs'
 

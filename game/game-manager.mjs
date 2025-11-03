@@ -12,9 +12,9 @@ export class GameManager {
 		this.uiManager = new UIManager(this)
 		this.modeManager = new GameModeManager(this)
 		this.lastGameHistory = []
-		this.gaInstance = null
+		this.geneticAlgorithm = null
 		this.trainingManager = null
-		this.stopReplayFlag = false
+		this.isReplayCancelled = false
 		this.currentModeName = null
 		this.currentModeOptions = {}
 		this.userInputResolver = null
@@ -22,8 +22,8 @@ export class GameManager {
 
 	async initialize() {
 		const { ga, evolutionData } = await GeneticAlgorithm.createWithEvolutionData(GameConfig.ai.populationSize, GameConfig.ai.mutationRate)
-		this.gaInstance = ga
-		this.trainingManager = new TrainingManager(this.gaInstance, evolutionData)
+		this.geneticAlgorithm = ga
+		this.trainingManager = new TrainingManager(this.geneticAlgorithm, evolutionData)
 	}
 
 	async startGame(mode, options = {}) {
@@ -118,12 +118,12 @@ export class GameManager {
 	}
 
 	async playHistory(fullMoveHistory, delay = GameConfig.animation.moveDuration, onStep = null) {
-		this.stopReplayFlag = false
+		this.isReplayCancelled = false
 		this.uiManager.resetBoardAndWinningLine()
 		const replayState = new GameState()
 
 		for (let i = 0; i < fullMoveHistory.length; i++) {
-			if (this.stopReplayFlag) {
+			if (this.isReplayCancelled) {
 				console.log('Replay interrupted.')
 				break
 			}
@@ -155,7 +155,7 @@ export class GameManager {
 	}
 
 	stopReplay() {
-		this.stopReplayFlag = true
+		this.isReplayCancelled = true
 	}
 
 	exitGame() {

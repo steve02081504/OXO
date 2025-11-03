@@ -1,4 +1,4 @@
-import { AIFactory, TraditionalAI, runGameSimulation, UserInputAI } from '../../ai/index.mjs'
+import { AIFactory, TraditionalAI, runGameSimulation, PlayerInputAdapter } from '../../ai/index.mjs'
 import { GameConfig } from '../../config.mjs'
 import { NeuralNetwork } from '../../neural/neural-network.mjs'
 
@@ -12,7 +12,7 @@ export class PVEMode extends BaseMode {
 
 		this.gameManager.uiManager.hideAllControls()
 		this.gameManager.uiManager.showView('game-view')
-		const userInputAI = AIFactory.createUserInputAI(this.gameManager)
+		const userInputAI = AIFactory.createPlayerInputAdapter(this.gameManager)
 		const opponentAI = await this.createOpponentAI()
 
 		this.playerAIs.X = this.playerSide === 'X' ? userInputAI : opponentAI
@@ -24,11 +24,12 @@ export class PVEMode extends BaseMode {
 	}
 
 	async handleUrlParams(options) {
-		this.playerSide = options.playerSide || 'X'
+		this.playerSide = options.playAs || 'X'
 
-		if (options.AIUrl) {
-			const network = await NeuralNetwork.fromUrl(options.AIUrl)
-			if (network) this.playerAIs[this.playerSide === 'X' ? 'O' : 'X'] = AIFactory.createNeuralAI(network)
+		if (options.opponentNetworkUrl) try {
+			this.playerAIs[this.playerSide === 'X' ? 'O' : 'X'] = AIFactory.createNeuralAI(await NeuralNetwork.fromUrl(options.opponentNetworkUrl))
+		} catch (error) {
+			alert(`Failed to load opponent network from ${options.opponentNetworkUrl}:\n${error.message}`)
 		}
 	}
 
@@ -37,8 +38,8 @@ export class PVEMode extends BaseMode {
 		if (this.playerAIs[opponentSide])
 			return this.playerAIs[opponentSide]
 
-		const gaInstance = this.gameManager.gaInstance
-		const population = gaInstance.population
+		const geneticAlgorithm = this.gameManager.geneticAlgorithm
+		const population = geneticAlgorithm.population
 		if (population.length > 0) {
 			const traditionalAI = new TraditionalAI()
 			const challengerNetwork = population.reduce((prev, current) => prev.fitness > current.fitness ? prev : current)
@@ -67,7 +68,7 @@ export class PVEMode extends BaseMode {
 		if (!gameState.gameActive) return
 
 		const currentPlayerAI = this.playerAIs[gameState.currentPlayer]
-		const isUserInput = currentPlayerAI instanceof UserInputAI
+		const isUserInput = currentPlayerAI instanceof PlayerInputAdapter
 
 		if (!isUserInput) {
 			this.gameManager.uiManager.indicateThinking(true, gameState.currentPlayer)

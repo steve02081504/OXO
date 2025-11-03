@@ -3,7 +3,7 @@ import { autoEveControlsElement, eveControlsO, eveControlsX, pveControlsElement,
 const exitGameButtons = document.querySelectorAll('.js-exit-game')
 const exitPVEButtons = [exitGameButtonPVE].filter(Boolean)
 
-export class ViewController {
+export class ViewManager {
 	constructor() {
 		this.views = new Map()
 		this.controlPanels = {

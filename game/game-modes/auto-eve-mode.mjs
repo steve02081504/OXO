@@ -21,8 +21,8 @@ export class AutoEVEMode extends BaseMode {
 		this.gameManager.uiManager.displayVisualizationForPlayer('X', uiX)
 		this.gameManager.uiManager.displayVisualizationForPlayer('O', uiO)
 
-		// 注册重置训练按钮事件
-		confirmResetButton.onclick = () => this.handleRestartTraining()
+		this.restartTrainingHandler = this.handleRestartTraining.bind(this)
+		confirmResetButton.addEventListener('click', this.restartTrainingHandler)
 
 		this.gameManager.trainingManager.setFullSpeed(true)
 		console.log('Switched to full-speed training for Auto-EVE mode.')
@@ -38,11 +38,11 @@ export class AutoEVEMode extends BaseMode {
 	}
 
 	async handleUrlParams(options) {
-		const urls = [].concat(options.add || [])
-		for (const url of urls) {
-			const network = await NeuralNetwork.fromUrl(url)
-			if (network)
-				this.gameManager.gaInstance.population.push(network)
+		const urls = [].concat(options.importNetworkUrl || [])
+		for (const url of urls) try {
+			this.gameManager.geneticAlgorithm.population.push(await NeuralNetwork.fromUrl(url))
+		} catch (error) {
+			alert(`Failed to import network from ${url}:\n${error.message}`)
 		}
 	}
 
@@ -64,6 +64,8 @@ export class AutoEVEMode extends BaseMode {
 		console.log('Switched to background training for Auto-EVE mode.')
 
 		this.gameManager.stopReplay()
+
+		confirmResetButton.removeEventListener('click', this.restartTrainingHandler)
 
 		// 进化数据已经在 TrainingManager 中保存，无需额外保存
 
@@ -112,6 +114,7 @@ export class AutoEVEMode extends BaseMode {
 				if (latestGame.winner) await new Promise(resolve => setTimeout(resolve, 500))
 
 				this.gameManager.uiManager.reset()
+
 				this.autoEveCurrentGame = null
 				this.isAnimationPlaying = false
 			}
@@ -152,12 +155,12 @@ export class AutoEVEMode extends BaseMode {
 	}
 
 	exportBestNetwork() {
-		const population = this.gameManager.gaInstance.population
+		const population = this.gameManager.geneticAlgorithm.population
 		if (population.length === 0) return null
 		return population.reduce((prev, current) => prev.fitness > current.fitness ? prev : current)
 	}
 
 	importNetwork(network) {
-		this.gameManager.gaInstance.population.push(network)
+		this.gameManager.geneticAlgorithm.population.push(network)
 	}
 }

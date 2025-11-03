@@ -1,5 +1,5 @@
 import { GameConfig } from '../config.mjs'
-import { loadPopulation } from '../core/persistence-manager.mjs'
+import { loadPopulation } from '../core/storage.mjs'
 
 import { NetworkEvolver } from './network-evolver.mjs'
 import { NeuralNetwork } from './neural-network.mjs'

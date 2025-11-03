@@ -2,7 +2,7 @@ import confetti from 'https://esm.sh/canvas-confetti'
 
 import { AI } from './base-ai.mjs'
 
-export class UserInputAI extends AI {
+export class PlayerInputAdapter extends AI {
 	constructor(gameManager) {
 		super()
 		this.gameManager = gameManager

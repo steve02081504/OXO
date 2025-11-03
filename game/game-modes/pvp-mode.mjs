@@ -9,8 +9,8 @@ export class PVPMode extends BaseMode {
 		this.gameManager.uiManager.showView('game-view')
 		this.gameManager.uiManager.showPvpControls()
 		this.playerAIs = {
-			X: AIFactory.createUserInputAI(gameManager),
-			O: AIFactory.createUserInputAI(gameManager)
+			X: AIFactory.createPlayerInputAdapter(gameManager),
+			O: AIFactory.createPlayerInputAdapter(gameManager)
 		}
 	}
 	async onMoveMade() {

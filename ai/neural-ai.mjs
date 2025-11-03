@@ -48,9 +48,7 @@ export class NeuralAI extends AI {
 			activatedConnections
 		)
 
-		return availableCells.reduce((best, current) => {
-			outputs[current] > outputs[best] ? current : best
-		})
+		return availableCells.reduce((best, current) => outputs[current] > outputs[best] ? current : best)
 	}
 
 	static generateNeuralInput(board, currentPlayer, moveHistory, activePieces) {

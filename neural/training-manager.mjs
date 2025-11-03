@@ -1,12 +1,12 @@
-import { runGameSimulation } from '../ai/ai-evaluator.mjs'
+import { runGameSimulation } from '../ai/simulation-runner.mjs'
 import { NeuralAI } from '../ai/neural-ai.mjs'
 import { TraditionalAI } from '../ai/traditional-ai.mjs'
 import { GameConfig } from '../config.mjs'
-import { savePopulation } from '../core/persistence-manager.mjs'
+import { savePopulation } from '../core/storage.mjs'
 
 export class TrainingManager {
-	constructor(gaInstance, evolutionData = null) {
-		this.gaInstance = gaInstance
+	constructor(geneticAlgorithm, evolutionData = null) {
+		this.geneticAlgorithm = geneticAlgorithm
 		this.trainingRunning = false
 		this.isFullSpeed = false
 
@@ -85,7 +85,7 @@ export class TrainingManager {
 			avgGameLength: this.avgGameLength
 		}
 		await savePopulation({
-			population: this.gaInstance.population,
+			population: this.geneticAlgorithm.population,
 			evolutionData
 		})
 		console.log('Training state saved manually.')
@@ -93,7 +93,7 @@ export class TrainingManager {
 
 	resetTraining() {
 		this.stop()
-		this.gaInstance.resetPopulation()
+		this.geneticAlgorithm.resetPopulation()
 		this.battleCount = 0
 		this.bestFitness = 0
 		this.generationCount = 0
@@ -112,14 +112,14 @@ export class TrainingManager {
 	}
 
 	getStats() {
-		const averageFitness = this.gaInstance.population.length > 0
-			? this.gaInstance.population.reduce((sum, network) => sum + (network.fitness || 0), 0) / this.gaInstance.population.length
+		const averageFitness = this.geneticAlgorithm.population.length > 0
+			? this.geneticAlgorithm.population.reduce((sum, network) => sum + (network.fitness || 0), 0) / this.geneticAlgorithm.population.length
 			: 0
 
 		const generationTime = this.startTime ? (Date.now() - this.startTime) / 1000 : 0
 
 		// 计算网络复杂度
-		const bestNetwork = this.gaInstance.population.reduce((prev, current) => prev.fitness > current.fitness ? prev : current)
+		const bestNetwork = this.geneticAlgorithm.population.reduce((prev, current) => prev.fitness > current.fitness ? prev : current)
 		const networkComplexity = bestNetwork ? {
 			nodeCount: bestNetwork.nodes.size,
 			connectionCount: bestNetwork.getConnections().length
@@ -129,7 +129,7 @@ export class TrainingManager {
 		this.avgGameLength = (this.avgGameLength * 49 + (this.latestCompletedGame?.length || 0)) / 50
 
 		return {
-			populationSize: this.gaInstance.population.length,
+			populationSize: this.geneticAlgorithm.population.length,
 			battleCount: this.battleCount,
 			bestFitness: this.bestFitness,
 			averageFitness,
@@ -155,7 +155,7 @@ export class TrainingManager {
 		while (this.trainingRunning) {
 			const startTime = performance.now()
 
-			const population = this.gaInstance.population
+			const population = this.geneticAlgorithm.population
 			const network1Index = Math.floor(Math.random() * population.length)
 			let network2Index
 
@@ -207,23 +207,23 @@ export class TrainingManager {
 			this.battleCount++
 			this.bestFitness = Math.max(...population.map(n => n.fitness || 0))
 
-			if (this.battleCount % (this.gaInstance.populationSize * 5) === 0) {
+			if (this.battleCount % (this.geneticAlgorithm.populationSize * 5) === 0) {
 				// 在与传统AI对战前，评估并奖励胜利者
-				for (const network of this.gaInstance.population) {
+				for (const network of this.geneticAlgorithm.population) {
 					this.aiPlayerX.setNetwork(network)
 					const gameResult = await runGameSimulation(this.aiPlayerX, this.traditionalAI, GameConfig.ai.training.maxMovesPerGame)
 					if (gameResult.winner === 'X')
 						network.fitness += 5
 				}
 
-				const maxFitnessCurrentGeneration = Math.max(...this.gaInstance.population.map(n => n.fitness || 0))
-				this.gaInstance.evolve()
-				this.gaInstance.scaleFitness(1 / maxFitnessCurrentGeneration)
+				const maxFitnessCurrentGeneration = Math.max(...this.geneticAlgorithm.population.map(n => n.fitness || 0))
+				this.geneticAlgorithm.evolve()
+				this.geneticAlgorithm.scaleFitness(1 / maxFitnessCurrentGeneration)
 				this.generationCount++
 
 				// 记录历史数据
 				this.fitnessHistory.push(this.bestFitness)
-				this.averageFitnessHistory.push(this.gaInstance.population.reduce((sum, network) => sum + (network.fitness || 0), 0) / this.gaInstance.population.length)
+				this.averageFitnessHistory.push(this.geneticAlgorithm.population.reduce((sum, network) => sum + (network.fitness || 0), 0) / this.geneticAlgorithm.population.length)
 				this.winRateHistory.push(this.generationWinRates.reduce((sum, rate) => sum + rate, 0) / this.generationWinRates.length || 0)
 
 				// 记录X和O的胜率历史
@@ -262,7 +262,7 @@ export class TrainingManager {
 					avgGameLength: this.avgGameLength
 				}
 				await savePopulation({
-					population: this.gaInstance.population,
+					population: this.geneticAlgorithm.population,
 					evolutionData
 				})
 

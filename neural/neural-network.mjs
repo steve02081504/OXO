@@ -235,15 +235,10 @@ export class NeuralNetwork {
 	}
 
 	static async fromUrl(url) {
-		try {
-			const response = await fetch(url)
-			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-			const networkData = await response.json()
-			return NeuralNetwork.fromJSON(networkData)
-		} catch (error) {
-			console.error(`Failed to load network from ${url}:`, error)
-			return null
-		}
+		const response = await fetch(url)
+		if (!response.ok) throw new Error(`HTTP error, status: ${response.status}`)
+		const networkData = await response.json()
+		return NeuralNetwork.fromJSON(networkData)
 	}
 
 	clone() {

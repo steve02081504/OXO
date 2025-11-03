@@ -2,24 +2,24 @@ import { downloadJSON } from '../core/utils.mjs'
 
 import { BoardRenderer } from './board-renderer.mjs'
 import { StatsUpdater } from './stats-updater.mjs'
-import { ViewController } from './view-controller.mjs'
+import { ViewManager } from './view-manager.mjs'
 
 export class UIManager {
 	constructor(gameManager) {
 		this.gameManager = gameManager
 		this.boardRenderer = new BoardRenderer()
-		this.viewController = new ViewController()
+		this.viewManager = new ViewManager()
 		this.statsUpdater = new StatsUpdater()
 		this.fitnessChart = null
 		this.winRateChart = null
 	}
 
 	registerView(name, element) {
-		this.viewController.registerView(name, element)
+		this.viewManager.registerView(name, element)
 	}
 
 	showView(name) {
-		this.viewController.showView(name)
+		this.viewManager.showView(name)
 	}
 
 	initializeBoard(boardElement, cellClickHandler) {
@@ -27,11 +27,11 @@ export class UIManager {
 	}
 
 	showExportHistoryButton() {
-		this.viewController.showExportHistoryButton()
+		this.viewManager.showExportHistoryButton()
 	}
 
 	hideExportHistoryButton() {
-		this.viewController.hideExportHistoryButton()
+		this.viewManager.hideExportHistoryButton()
 	}
 
 	exportGameHistory(moveHistory) {
@@ -39,19 +39,19 @@ export class UIManager {
 	}
 
 	showControlsForMode(modeName) {
-		this.viewController.showControlsForMode(modeName)
+		this.viewManager.showControlsForMode(modeName)
 	}
 
 	hideAllControls() {
-		this.viewController.hideAllControls()
+		this.viewManager.hideAllControls()
 	}
 
 	displayVisualizationForPlayer(player, uiElement) {
-		this.viewController.displayVisualizationForPlayer(player, uiElement)
+		this.viewManager.displayVisualizationForPlayer(player, uiElement)
 	}
 
 	clearAllVisualizations() {
-		this.viewController.clearAllVisualizations()
+		this.viewManager.clearAllVisualizations()
 	}
 
 	updateBoard(gameStateArray, moveHistory) {
@@ -72,47 +72,47 @@ export class UIManager {
 	}
 
 	updateTurnIndicator(currentPlayer) {
-		this.viewController.updateTurnIndicator(currentPlayer)
+		this.viewManager.updateTurnIndicator(currentPlayer)
 	}
 
 	showEndgameActions() {
-		this.viewController.showEndgameActions()
+		this.viewManager.showEndgameActions()
 	}
 
 	hideEndgameActions() {
-		this.viewController.hideEndgameActions()
+		this.viewManager.hideEndgameActions()
 	}
 
 	showAutoEveControls() {
-		this.viewController.showAutoEveControls()
+		this.viewManager.showAutoEveControls()
 	}
 
 	hideAutoEveControls() {
-		this.viewController.hideAutoEveControls()
+		this.viewManager.hideAutoEveControls()
 	}
 
 	showPveControls() {
-		this.viewController.showPveControls()
+		this.viewManager.showPveControls()
 	}
 
 	hidePveControls() {
-		this.viewController.hidePveControls()
+		this.viewManager.hidePveControls()
 	}
 
 	showPvpControls() {
-		this.viewController.showPvpControls()
+		this.viewManager.showPvpControls()
 	}
 
 	hidePvpControls() {
-		this.viewController.hidePvpControls()
+		this.viewManager.hidePvpControls()
 	}
 
 	showReplayControls() {
-		this.viewController.showReplayControls()
+		this.viewManager.showReplayControls()
 	}
 
 	hideReplayControls() {
-		this.viewController.hideReplayControls()
+		this.viewManager.hideReplayControls()
 	}
 
 	setBoardInteraction(enabled) {
@@ -121,7 +121,7 @@ export class UIManager {
 
 	resetBoardAndWinningLine() {
 		this.boardRenderer.resetBoardAndWinningLine()
-		this.viewController.hideEndgameActions()
+		this.viewManager.hideEndgameActions()
 	}
 
 	updateAutoEveStats(stats) {
@@ -129,29 +129,29 @@ export class UIManager {
 	}
 
 	showExitGameButton() {
-		this.viewController.showExitGameButton()
+		this.viewManager.showExitGameButton()
 	}
 
 	hideExitGameButton() {
-		this.viewController.hideExitGameButton()
+		this.viewManager.hideExitGameButton()
 	}
 
 	showExitGameButtonPVE() {
-		this.viewController.showExitGameButtonPVE()
+		this.viewManager.showExitGameButtonPVE()
 	}
 
 	hideExitGameButtonPVE() {
-		this.viewController.hideExitGameButtonPVE()
+		this.viewManager.hideExitGameButtonPVE()
 	}
 
 	indicateThinking(isThinking, player) {
-		this.viewController.indicateThinking(isThinking, player)
+		this.viewManager.indicateThinking(isThinking, player)
 	}
 
 	reset() {
 		this.resetBoardAndWinningLine()
 		this.updateMoveCountDisplay(0)
-		this.viewController.hideExportHistoryButton()
+		this.viewManager.hideExportHistoryButton()
 		if (this.fitnessChart) {
 			this.fitnessChart.data.labels = []
 			this.fitnessChart.data.datasets[0].data = []
@@ -173,6 +173,6 @@ export class UIManager {
 	}
 
 	showConfirmResetModal() {
-		this.viewController.showConfirmResetModal()
+		this.viewManager.showConfirmResetModal()
 	}
 }

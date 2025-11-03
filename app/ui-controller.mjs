@@ -87,7 +87,7 @@ export function initializeEventListeners(gameManager) {
 	})
 
 	// 使用更简洁的配置数组和统一的逻辑
-	const ioButtonConfigs = [
+	const importExportConfigs = [
 		// EVE
 		{ id: 'import-x-button', mode: EVEMode, type: 'import', handler: (mode, ai) => { mode.playerAIs.X = ai }, message: '成功导入X玩家的神经网络！' },
 		{ id: 'export-x-button', mode: EVEMode, type: 'export', handler: (mode) => mode.playerAIs.X?.network, filename: 'neural_network_X.json' },
@@ -100,7 +100,7 @@ export function initializeEventListeners(gameManager) {
 		{ id: 'import-network-button', mode: AutoEVEMode, type: 'import', handler: (mode, ai) => { mode.importNetwork(ai.network) }, message: '成功导入神经网络并加入训练种群！' }
 	]
 
-	ioButtonConfigs.forEach(config => {
+	importExportConfigs.forEach(config => {
 		const button = document.getElementById(config.id)
 		if (!button) return
 

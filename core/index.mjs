@@ -1,2 +1,2 @@
-export { savePopulation, loadPopulation } from './persistence-manager.mjs'
+export { savePopulation, loadPopulation } from './storage.mjs'
 export { downloadJSON, importJSON } from './utils.mjs'

@@ -24,7 +24,7 @@ export class EVEMode extends BaseMode {
 
 	determineNetworks(options) {
 		let { networkX, networkO } = options
-		const ga = this.gameManager.gaInstance
+		const ga = this.gameManager.geneticAlgorithm
 
 		if (ga && ga.population.length > 1) {
 			if (!networkX)
@@ -46,15 +46,16 @@ export class EVEMode extends BaseMode {
 
 	async handleUrlParams(options) {
 		const loadAndSetAI = async (player, url) => {
-			if (url) {
-				const network = await NeuralNetwork.fromUrl(url)
-				if (network) this.playerAIs[player] = AIFactory.createNeuralAI(network)
+			if (url) try {
+				this.playerAIs[player] = AIFactory.createNeuralAI(await NeuralNetwork.fromUrl(url))
+			} catch (error) {
+				alert(`Failed to load network for player ${player} from ${url}:\n${error.message}`)
 			}
 		}
 
 		await Promise.all([
-			loadAndSetAI('X', options.XAIUrl),
-			loadAndSetAI('O', options.OAIUrl)
+			loadAndSetAI('X', options.networkUrlX),
+			loadAndSetAI('O', options.networkUrlO)
 		])
 	}
 
