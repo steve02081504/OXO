@@ -1,10 +1,23 @@
 import { Node } from './base-node.mjs'
 
+/**
+ * @class AddNode
+ * @classdesc 加法节点。
+ * @augments Node
+ */
 export class AddNode extends Node {
+	/**
+	 * @class
+	 * @param {string} id - 节点ID。
+	 */
 	constructor(id) {
 		super(id)
 		this.parameters.weights = []
 	}
+
+	/**
+	 * @override
+	 */
 	evaluate(nodeMap) {
 		let sum = 0
 		for (let i = 0; i < this.inputs.length; i++) {
@@ -16,11 +29,24 @@ export class AddNode extends Node {
 	}
 }
 
+/**
+ * @class SubtractNode
+ * @classdesc 减法节点。
+ * @augments Node
+ */
 export class SubtractNode extends Node {
+	/**
+	 * @class
+	 * @param {string} id - 节点ID。
+	 */
 	constructor(id) {
 		super(id)
 		this.parameters.weights = []
 	}
+
+	/**
+	 * @override
+	 */
 	evaluate(nodeMap) {
 		if (this.inputs.length < 2) {
 			this.value = 0
@@ -33,11 +59,24 @@ export class SubtractNode extends Node {
 	}
 }
 
+/**
+ * @class MultiplyNode
+ * @classdesc 乘法节点。
+ * @augments Node
+ */
 export class MultiplyNode extends Node {
+	/**
+	 * @class
+	 * @param {string} id - 节点ID。
+	 */
 	constructor(id) {
 		super(id)
 		this.parameters.weights = []
 	}
+
+	/**
+	 * @override
+	 */
 	evaluate(nodeMap) {
 		let product = 1
 		for (let i = 0; i < this.inputs.length; i++) {
@@ -49,11 +88,24 @@ export class MultiplyNode extends Node {
 	}
 }
 
+/**
+ * @class DivideNode
+ * @classdesc 除法节点。
+ * @augments Node
+ */
 export class DivideNode extends Node {
+	/**
+	 * @class
+	 * @param {string} id - 节点ID。
+	 */
 	constructor(id) {
 		super(id)
 		this.parameters.weights = []
 	}
+
+	/**
+	 * @override
+	 */
 	evaluate(nodeMap) {
 		if (this.inputs.length < 2) {
 			this.value = 0
@@ -67,10 +119,23 @@ export class DivideNode extends Node {
 	}
 }
 
+/**
+ * @class SinNode
+ * @classdesc 正弦节点。
+ * @augments Node
+ */
 export class SinNode extends Node {
+	/**
+	 * @class
+	 * @param {string} id - 节点ID。
+	 */
 	constructor(id) {
 		super(id)
 	}
+
+	/**
+	 * @override
+	 */
 	evaluate(nodeMap) {
 		if (!this.inputs.length) {
 			this.value = 0
@@ -82,10 +147,23 @@ export class SinNode extends Node {
 	}
 }
 
+/**
+ * @class CosNode
+ * @classdesc 余弦节点。
+ * @augments Node
+ */
 export class CosNode extends Node {
+	/**
+	 * @class
+	 * @param {string} id - 节点ID。
+	 */
 	constructor(id) {
 		super(id)
 	}
+
+	/**
+	 * @override
+	 */
 	evaluate(nodeMap) {
 		if (!this.inputs.length) {
 			this.value = 0

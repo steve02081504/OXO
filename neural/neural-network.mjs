@@ -1,7 +1,15 @@
 import { NetworkEvolver } from './network-evolver.mjs'
 import { InputNode, ConstantNode, OutputNode, NodeFactory } from './nodes/index.mjs'
 
+/**
+ * @class NeuralNetwork
+ * @classdesc 表示一个神经网络。
+ */
 export class NeuralNetwork {
+	/**
+	 * @class
+	 * @param {object} [config={}] - 神经网络的配置。
+	 */
 	constructor(config = {}) {
 		this.config = {
 			inputSize: 9,
@@ -47,6 +55,9 @@ export class NeuralNetwork {
 		this.buildInitialNetwork()
 	}
 
+	/**
+	 * 构建初始网络。
+	 */
 	buildInitialNetwork() {
 		this.nodes.clear()
 		this.inputNodeIds = []
@@ -71,7 +82,7 @@ export class NeuralNetwork {
 	}
 
 	/**
-	 * 更新缓存的拓扑排序
+	 * 更新缓存的拓扑排序。
 	 */
 	updateTopologicalOrder() {
 		this.topologicalOrder = this.computeTopologicalOrder()
@@ -130,11 +141,11 @@ export class NeuralNetwork {
 	}
 
 	/**
-	 * 前向传播：计算网络输出
+	 * 前向传播：计算网络输出。
 	 * 通过拓扑排序评估节点，确保每个节点在一次迭代中只执行一次。
 	 * 如果检测到循环依赖，将发出警告，并尽可能地进行单次评估。
-	 * @param {Array} inputs - 输入值数组
-	 * @returns {Object} - 包含输出值、激活节点和激活连接的对象
+	 * @param {Array<number>} inputs - 输入值数组。
+	 * @returns {{outputValues: Array<number>, activatedNodes: Array<string>, activatedConnections: Array<object>}} - 包含输出值、激活节点和激活连接的对象。
 	 */
 	forward(inputs) {
 		// 重置所有节点值
@@ -177,6 +188,10 @@ export class NeuralNetwork {
 		return { outputValues, activatedNodes, activatedConnections }
 	}
 
+	/**
+	 * 将网络转换为JSON对象。
+	 * @returns {object} - 网络的JSON表示。
+	 */
 	toJSON() {
 		return {
 			config: this.config,
@@ -190,6 +205,11 @@ export class NeuralNetwork {
 		}
 	}
 
+	/**
+	 * 从JSON对象创建网络。
+	 * @param {object} json - 网络的JSON表示。
+	 * @returns {NeuralNetwork} - 新的网络实例。
+	 */
 	static fromJSON(json) {
 		const network = new NeuralNetwork(json.config)
 		network.nodes.clear()
@@ -234,6 +254,11 @@ export class NeuralNetwork {
 		return network
 	}
 
+	/**
+	 * 从URL加载网络。
+	 * @param {string} url - 网络的URL。
+	 * @returns {Promise<NeuralNetwork>} - 新的网络实例。
+	 */
 	static async fromUrl(url) {
 		const response = await fetch(url)
 		if (!response.ok) throw new Error(`HTTP error, status: ${response.status}`)
@@ -241,6 +266,10 @@ export class NeuralNetwork {
 		return NeuralNetwork.fromJSON(networkData)
 	}
 
+	/**
+	 * 克隆网络。
+	 * @returns {NeuralNetwork} - 克隆的网络实例。
+	 */
 	clone() {
 		const clonedNetwork = new NeuralNetwork(this.config)
 		clonedNetwork.nodes.clear()
@@ -263,12 +292,20 @@ export class NeuralNetwork {
 		return clonedNetwork
 	}
 
+	/**
+	 * 获取隐藏节点。
+	 * @returns {Array<object>} - 隐藏节点数组。
+	 */
 	getHiddenNodes() {
 		return Array.from(this.nodes.values()).filter(node =>
 			!(node instanceof InputNode) && !(node instanceof OutputNode)
 		)
 	}
 
+	/**
+	 * 获取网络中的所有连接。
+	 * @returns {Array<object>} - 连接数组。
+	 */
 	getConnections() {
 		const connections = []
 		this.nodes.forEach(node => {
@@ -286,17 +323,25 @@ export class NeuralNetwork {
 		return connections
 	}
 
+	/**
+	 * 获取可作为连接源的节点。
+	 * @returns {Array<object>} - 源节点数组。
+	 */
 	getAvailableSourceNodes() {
 		return Array.from(this.nodes.values()).filter(node => !(node instanceof OutputNode))
 	}
 
+	/**
+	 * 获取可作为连接目标的节点。
+	 * @returns {Array<object>} - 目标节点数组。
+	 */
 	getAvailableTargetNodes() {
 		return Array.from(this.nodes.values()).filter(node => !(node instanceof InputNode) && !(node instanceof ConstantNode))
 	}
 
 	/**
-	 * 突变：应用随机变化到网络结构和参数
-	 * 委托给 NetworkEvolver 类处理
+	 * 突变：应用随机变化到网络结构和参数。
+	 * 委托给 NetworkEvolver 类处理。
 	 */
 	mutate() {
 		NetworkEvolver.mutate(this)
@@ -304,15 +349,19 @@ export class NeuralNetwork {
 	}
 
 	/**
-	 * 交叉：与另一个网络结合产生子代
-	 * 委托给 NetworkEvolver 类处理
-	 * @param {NeuralNetwork} partner - 配对的网络
-	 * @returns {NeuralNetwork} - 子代网络
+	 * 交叉：与另一个网络结合产生子代。
+	 * 委托给 NetworkEvolver 类处理。
+	 * @param {NeuralNetwork} partner - 配对的网络。
+	 * @returns {NeuralNetwork} - 子代网络。
 	 */
 	crossover(partner) {
 		return NetworkEvolver.crossover(this, partner)
 	}
 
+	/**
+	 * 生成高斯随机数。
+	 * @returns {number} - 0到1之间的高斯随机数。
+	 */
 	static gaussianRandom() {
 		let u = 0, v = 0
 		while (u === 0) u = Math.random() // Converting [0,1) to (0,1)

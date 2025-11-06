@@ -11,6 +11,10 @@ import {
 } from '../ui/DOM.mjs'
 
 // 辅助函数：为Modal启用点击框外关闭功能
+/**
+ * 为Modal启用点击框外关闭功能。
+ * @param {HTMLDialogElement} modalElement - 模态对话框元素。
+ */
 function enableModalClickOutsideClose(modalElement) {
 	modalElement.addEventListener('click', (event) => {
 		if (event.target === modalElement)
@@ -18,6 +22,10 @@ function enableModalClickOutsideClose(modalElement) {
 	})
 }
 
+/**
+ * 初始化所有UI事件监听器。
+ * @param {object} gameManager - 游戏管理器实例。
+ */
 export function initializeEventListeners(gameManager) {
 	pvpButton.addEventListener('click', () => {
 		gameManager.startGame('pvp')
@@ -89,15 +97,64 @@ export function initializeEventListeners(gameManager) {
 	// 使用更简洁的配置数组和统一的逻辑
 	const importExportConfigs = [
 		// EVE
-		{ id: 'import-x-button', mode: EVEMode, type: 'import', handler: (mode, ai) => { mode.playerAIs.X = ai }, message: '成功导入X玩家的神经网络！' },
-		{ id: 'export-x-button', mode: EVEMode, type: 'export', handler: (mode) => mode.playerAIs.X?.network, filename: 'neural_network_X.json' },
-		{ id: 'import-o-button', mode: EVEMode, type: 'import', handler: (mode, ai) => { mode.playerAIs.O = ai }, message: '成功导入O玩家的神经网络！' },
-		{ id: 'export-o-button', mode: EVEMode, type: 'export', handler: (mode) => mode.playerAIs.O?.network, filename: 'neural_network_O.json' },
+		{
+			id: 'import-x-button', mode: EVEMode, type: 'import',
+			/**
+			 * @param {object} mode - 游戏模式实例。
+			 * @param {object} ai - 要设置的AI实例。
+			 */
+			handler: (mode, ai) => { mode.playerAIs.X = ai }, message: '成功导入X玩家的神经网络！'
+		},
+		{
+			id: 'export-x-button', mode: EVEMode, type: 'export',
+			/**
+			 * @param {object} mode - 游戏模式实例。
+			 * @returns {object} - 要导出的神经网络实例。
+			 */
+			handler: (mode) => mode.playerAIs.X?.network, filename: 'neural_network_X.json'
+		},
+		{
+			id: 'import-o-button', mode: EVEMode, type: 'import',
+			/**
+			 * @param {object} mode - 游戏模式实例。
+			 * @param {object} ai - 要设置的AI实例。
+			 */
+			handler: (mode, ai) => { mode.playerAIs.O = ai }, message: '成功导入O玩家的神经网络！'
+		},
+		{
+			id: 'export-o-button', mode: EVEMode, type: 'export',
+			/**
+			 * @param {object} mode - 游戏模式实例。
+			 * @returns {object} - 要导出的神经网络实例。
+			 */
+			handler: (mode) => mode.playerAIs.O?.network, filename: 'neural_network_O.json'
+		},
 		// PVE
-		{ id: 'import-pve-ai-button', mode: PVEMode, type: 'import', handler: (mode, ai) => { mode.playerAIs.O = ai }, message: '成功导入PVE AI的神经网络！' },
+		{
+			id: 'import-pve-ai-button', mode: PVEMode, type: 'import',
+			/**
+			 * @param {object} mode - 游戏模式实例。
+			 * @param {object} ai - 要设置的AI实例。
+			 */
+			handler: (mode, ai) => { mode.playerAIs.O = ai }, message: '成功导入PVE AI的神经网络！'
+		},
 		// Auto-EVE
-		{ id: 'export-best-button', mode: AutoEVEMode, type: 'export', handler: (mode) => mode.exportBestNetwork(), filename: 'best_neural_network.json' },
-		{ id: 'import-network-button', mode: AutoEVEMode, type: 'import', handler: (mode, ai) => { mode.importNetwork(ai.network) }, message: '成功导入神经网络并加入训练种群！' }
+		{
+			id: 'export-best-button', mode: AutoEVEMode, type: 'export',
+			/**
+			 * @param {object} mode - 游戏模式实例。
+			 * @returns {object} - 要导出的神经网络实例。
+			 */
+			handler: (mode) => mode.exportBestNetwork(), filename: 'best_neural_network.json'
+		},
+		{
+			id: 'import-network-button', mode: AutoEVEMode, type: 'import',
+			/**
+			 * @param {object} mode - 游戏模式实例。
+			 * @param {object} ai - 要设置的AI实例。
+			 */
+			handler: (mode, ai) => { mode.importNetwork(ai.network) }, message: '成功导入神经网络并加入训练种群！'
+		}
 	]
 
 	importExportConfigs.forEach(config => {

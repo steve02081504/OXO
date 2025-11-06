@@ -1,17 +1,25 @@
 import { Node } from './base-node.mjs'
 
 /**
- * 记忆节点
- * 输出上一次存储的值，并将当前输入值存入。
- * 这是一个有状态的节点。
+ * @class MemoryNode
+ * @classdesc 记忆节点。输出上一次存储的值，并将当前输入值存入。这是一个有状态的节点。
+ * @augments Node
  */
 export class MemoryNode extends Node {
+	/**
+	 * @class
+	 * @param {string} id - 节点ID。
+	 * @param {number} [initialState=0] - 初始状态。
+	 */
 	constructor(id, initialState = 0) {
 		super(id)
 		// 状态必须存储在 parameters 对象中，这样才能被 toJSON/fromJSON 正确序列化
 		this.parameters.memoryState = initialState
 	}
 
+	/**
+	 * @override
+	 */
 	evaluate(nodeMap) {
 		// 输出上一次的状态
 		this.value = this.parameters.memoryState
@@ -28,17 +36,25 @@ export class MemoryNode extends Node {
 
 
 /**
- * 锁存器节点
- * 当 gate 输入 > 0.5 时，用 data 输入更新内部状态。
- * 总是输出当前内部状态的值。
+ * @class LatchNode
+ * @classdesc 锁存器节点。当 gate 输入 > 0.5 时，用 data 输入更新内部状态。总是输出当前内部状态的值。
+ * @augments Node
  */
 export class LatchNode extends Node {
+	/**
+	 * @class
+	 * @param {string} id - 节点ID。
+	 * @param {number} [initialState=0] - 初始状态。
+	 */
 	constructor(id, initialState = 0) {
 		super(id)
 		// 状态必须存储在 parameters 对象中
 		this.parameters.latchedValue = initialState
 	}
 
+	/**
+	 * @override
+	 */
 	evaluate(nodeMap) {
 		// 至少需要两个输入: [data, gate]
 		if (this.inputs.length >= 2) {

@@ -1,10 +1,19 @@
-import { runGameSimulation } from '../ai/simulation-runner.mjs'
 import { NeuralAI } from '../ai/neural-ai.mjs'
+import { runGameSimulation } from '../ai/simulation-runner.mjs'
 import { TraditionalAI } from '../ai/traditional-ai.mjs'
 import { GameConfig } from '../config.mjs'
 import { savePopulation } from '../core/storage.mjs'
 
+/**
+ * @class TrainingManager
+ * @classdesc 管理AI的训练过程。
+ */
 export class TrainingManager {
+	/**
+	 * @class
+	 * @param {object} geneticAlgorithm - 遗传算法实例。
+	 * @param {object|null} [evolutionData=null] - 进化数据。
+	 */
 	constructor(geneticAlgorithm, evolutionData = null) {
 		this.geneticAlgorithm = geneticAlgorithm
 		this.trainingRunning = false
@@ -44,7 +53,6 @@ export class TrainingManager {
 
 	/**
 	 * 启动或调整训练循环。
-	 * @param {boolean} fullSpeed - true为全速训练, false为背景训练模式。
 	 */
 	start() {
 		if (!this.trainingRunning) {
@@ -53,20 +61,31 @@ export class TrainingManager {
 		}
 	}
 
+	/**
+	 * 停止训练循环。
+	 */
 	stop() {
 		this.trainingRunning = false
 	}
 
+	/**
+	 * 设置训练速度。
+	 * @param {boolean} fullSpeed - true为全速训练, false为背景训练模式。
+	 */
 	setFullSpeed(fullSpeed) {
 		this.isFullSpeed = fullSpeed
 	}
 
+	/**
+	 * 设置世代进化时的回调函数。
+	 * @param {Function} callback - 回调函数。
+	 */
 	setOnGenerationEvolve(callback) {
 		this.onGenerationEvolve = callback
 	}
 
 	/**
-	 * 手动保存当前训练状态到IndexedDB
+	 * 手动保存当前训练状态到IndexedDB。
 	 */
 	async saveCurrentState() {
 		const evolutionData = {
@@ -91,6 +110,9 @@ export class TrainingManager {
 		console.log('Training state saved manually.')
 	}
 
+	/**
+	 * 重置训练。
+	 */
 	resetTraining() {
 		this.stop()
 		this.geneticAlgorithm.resetPopulation()
@@ -111,6 +133,10 @@ export class TrainingManager {
 		this.start()
 	}
 
+	/**
+	 * 获取训练统计数据。
+	 * @returns {object} - 包含训练统计数据的对象。
+	 */
 	getStats() {
 		const averageFitness = this.geneticAlgorithm.population.length > 0
 			? this.geneticAlgorithm.population.reduce((sum, network) => sum + (network.fitness || 0), 0) / this.geneticAlgorithm.population.length
@@ -151,11 +177,14 @@ export class TrainingManager {
 		}
 	}
 
+	/**
+	 * 训练循环。
+	 */
 	async trainingLoop() {
 		while (this.trainingRunning) {
 			const startTime = performance.now()
 
-			const population = this.geneticAlgorithm.population
+			const { population } = this.geneticAlgorithm
 			const network1Index = Math.floor(Math.random() * population.length)
 			let network2Index
 

@@ -4,7 +4,17 @@ import { NeuralNetworkVisualizer } from '../../ui/neural-network-visualizer.mjs'
 
 import { BaseMode } from './base-mode.mjs'
 
+/**
+ * @class AutoEVEMode
+ * @classdesc 自动EVE模式，用于AI之间的自我对战和训练。
+ * @augments BaseMode
+ */
 export class AutoEVEMode extends BaseMode {
+	/**
+	 * 初始化AutoEVEMode。
+	 * @param {object} gameManager - 游戏管理器实例。
+	 * @param {object} options - 初始化选项。
+	 */
 	async initialize(gameManager, options) {
 		await super.initialize(gameManager, options)
 
@@ -37,6 +47,10 @@ export class AutoEVEMode extends BaseMode {
 		this.runUiLoop()
 	}
 
+	/**
+	 * 处理URL参数，例如导入神经网络。
+	 * @param {object} options - URL参数。
+	 */
 	async handleUrlParams(options) {
 		const urls = [].concat(options.importNetworkUrl || [])
 		for (const url of urls) try {
@@ -46,6 +60,9 @@ export class AutoEVEMode extends BaseMode {
 		}
 	}
 
+	/**
+	 * 处理重启训练的逻辑。
+	 */
 	async handleRestartTraining() {
 		confirmResetModal.close()
 		this.gameManager.trainingManager.resetTraining()
@@ -57,6 +74,9 @@ export class AutoEVEMode extends BaseMode {
 		console.log('Auto-EVE training reset and restarted.')
 	}
 
+	/**
+	 * 清理模式，恢复之前的设置。
+	 */
 	async cleanup() {
 		await super.cleanup()
 
@@ -74,6 +94,9 @@ export class AutoEVEMode extends BaseMode {
 		this.gameManager.uiManager.reset()
 	}
 
+	/**
+	 * 运行UI循环，更新可视化和游戏状态。
+	 */
 	async runUiLoop() {
 		while (this.gameManager.modeManager.currentMode === this) {
 			const { lastPlayedNetworkX, lastPlayedNetworkO, lastPlayedActivatedNodes, lastPlayedActivatedConnections } = this.gameManager.trainingManager.getStats()
@@ -90,6 +113,11 @@ export class AutoEVEMode extends BaseMode {
 				this.gameManager.trainingManager.latestCompletedGame = null
 
 				this.autoEveCurrentGame = latestGame.moves
+				/**
+				 * 游戏历史记录的回调函数。
+				 * @param {number} currentStep - 当前步数。
+				 * @param {number} totalSteps - 总步数。
+				 */
 				const onStepCallback = (currentStep, totalSteps) => {
 					this.updateAutoEveStats()
 					this.autoEveGameStep = currentStep
@@ -123,6 +151,9 @@ export class AutoEVEMode extends BaseMode {
 		}
 	}
 
+	/**
+	 * 更新自动EVE模式的统计数据。
+	 */
 	updateAutoEveStats() {
 		const progress = this.autoEveCurrentGame?.length > 0
 			? ((this.autoEveGameStep + 1) / this.autoEveCurrentGame.length) * 100
@@ -137,6 +168,9 @@ export class AutoEVEMode extends BaseMode {
 		})
 	}
 
+	/**
+	 * 切换动画播放状态。
+	 */
 	toggleAnimation() {
 		this.autoEveAnimationPlaying = !this.autoEveAnimationPlaying
 		const toggleAnimationButton = document.getElementById('toggle-animation-button')
@@ -144,6 +178,9 @@ export class AutoEVEMode extends BaseMode {
 			toggleAnimationButton.querySelector('iconify-icon').setAttribute('icon', this.autoEveAnimationPlaying ? 'line-md:play-to-pause-transition' : 'line-md:pause-to-play-transition')
 	}
 
+	/**
+	 * 播放下一场游戏。
+	 */
 	playNextGame() {
 		if (this.isAnimationPlaying) {
 			this.gameManager.stopReplay()
@@ -154,12 +191,20 @@ export class AutoEVEMode extends BaseMode {
 		}
 	}
 
+	/**
+	 * 导出当前种群中适应度最高的网络。
+	 * @returns {NeuralNetwork|null} 适应度最高的神经网络，如果没有则返回null。
+	 */
 	exportBestNetwork() {
-		const population = this.gameManager.geneticAlgorithm.population
+		const { population } = this.gameManager.geneticAlgorithm
 		if (population.length === 0) return null
 		return population.reduce((prev, current) => prev.fitness > current.fitness ? prev : current)
 	}
 
+	/**
+	 * 导入一个神经网络到当前种群。
+	 * @param {NeuralNetwork} network - 要导入的神经网络。
+	 */
 	importNetwork(network) {
 		this.gameManager.geneticAlgorithm.population.push(network)
 	}

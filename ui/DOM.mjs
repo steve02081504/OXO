@@ -1,3 +1,7 @@
+/**
+ * DOM 元素们
+ * @type {HTMLElement}
+ */
 export const winningLineSVG = document.getElementById('winning-line-svg'),
 	turnXElement = document.getElementById('turn-x'),
 	turnOElement = document.getElementById('turn-o'),

@@ -1,10 +1,20 @@
 import { GameConfig } from '../config.mjs'
 
+/**
+ * @class GameState
+ * @classdesc 管理游戏状态。
+ */
 export class GameState {
+	/**
+	 * @class
+	 */
 	constructor() {
 		this.reset()
 	}
 
+	/**
+	 * 重置游戏状态。
+	 */
 	reset() {
 		this.gameActive = true
 		this.currentPlayer = 'X'
@@ -13,6 +23,11 @@ export class GameState {
 		this.activePieces = []
 	}
 
+	/**
+	 * 执行一步移动。
+	 * @param {number} cellIndex - 移动的单元格索引。
+	 * @returns {{type: string, result: object|null}} - 移动结果。
+	 */
 	makeMove(cellIndex) {
 		if (!this.isValidMove(cellIndex))
 			return { type: 'invalid' }
@@ -36,6 +51,11 @@ export class GameState {
 		return { type: 'continue' }
 	}
 
+	/**
+	 * 检查移动是否有效。
+	 * @param {number} cellIndex - 移动的单元格索引。
+	 * @returns {boolean} - 如果移动有效，则返回true。
+	 */
 	isValidMove(cellIndex) {
 		return this.gameActive &&
 			cellIndex >= 0 &&
@@ -43,6 +63,10 @@ export class GameState {
 			this.board[cellIndex] === ''
 	}
 
+	/**
+	 * 记录移动。
+	 * @param {number} cellIndex - 移动的单元格索引。
+	 */
 	recordMove(cellIndex) {
 		const move = {
 			player: this.currentPlayer,
@@ -71,18 +95,34 @@ export class GameState {
 		})
 	}
 
+	/**
+	 * 检查棋盘是否已满。
+	 * @returns {boolean} - 如果棋盘已满，则返回true。
+	 */
 	isBoardFull() {
 		return this.board.every(cell => cell !== '')
 	}
 
+	/**
+	 * 切换玩家。
+	 */
 	switchPlayer() {
 		this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X'
 	}
 
+	/**
+	 * 检查胜利条件。
+	 * @returns {object|null} - 如果有胜利者，则返回胜利信息，否则返回null。
+	 */
 	checkWinCondition() {
 		return GameState.checkWinConditionFromState(this.board)
 	}
 
+	/**
+	 * 从给定的状态检查胜利条件。
+	 * @param {Array<string>} state - 游戏状态数组。
+	 * @returns {object|null} - 如果有胜利者，则返回胜利信息，否则返回null。
+	 */
 	static checkWinConditionFromState(state) {
 		const winningConditions = [
 			[0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -97,6 +137,11 @@ export class GameState {
 		}
 		return null
 	}
+
+	/**
+	 * 获取最后一步移动。
+	 * @returns {object|null} - 最后一步移动，如果没有则返回null。
+	 */
 	getLastMove() {
 		return this.moveHistory.length > 0 ? this.moveHistory[this.moveHistory.length - 1] : null
 	}

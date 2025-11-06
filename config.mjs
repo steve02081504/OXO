@@ -1,3 +1,6 @@
+/**
+ * 游戏配置
+ */
 export const GameConfig = {
 	board: {
 		size: 9,

@@ -1,3 +1,8 @@
+/**
+ * 将数据作为JSON文件下载。
+ * @param {object} data - 要下载的数据。
+ * @param {string} filename - 下载文件的名称。
+ */
 export function downloadJSON(data, filename) {
 	const dataStr = JSON.stringify(data, null, '\t')
 
@@ -8,8 +13,8 @@ export function downloadJSON(data, filename) {
 }
 
 /**
- * 统一的JSON文件导入工具函数
- * @returns {Promise<object>} 解析后的JSON对象
+ * 统一的JSON文件导入工具函数。
+ * @returns {Promise<object>} 解析后的JSON对象。
  */
 export function importJSON() {
 	return new Promise((resolve, reject) => {
@@ -17,11 +22,19 @@ export function importJSON() {
 		input.type = 'file'
 		input.accept = '.json,application/json'
 
+		/**
+		 * 在文件选择时的回调函数。
+		 * @param {Event} event - 文件选择事件。
+		 * @returns {void}
+		 */
 		input.onchange = (event) => {
 			const file = event.target.files[0]
 			if (!file) return reject(new Error('未选择文件。'))
 
 			const reader = new FileReader()
+			/**
+			 * @param {ProgressEvent<FileReader>} e - 文件加载事件。
+			 */
 			reader.onload = (e) => {
 				try {
 					resolve(JSON.parse(e.target.result))
@@ -29,6 +42,10 @@ export function importJSON() {
 					reject(new Error('文件解析失败，请确保为有效的JSON格式。'))
 				}
 			}
+			/**
+			 * 在文件读取失败时的回调函数。
+			 * @returns {void}
+			 */
 			reader.onerror = () => reject(new Error('文件读取失败。'))
 			reader.readAsText(file)
 		}

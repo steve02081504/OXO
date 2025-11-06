@@ -4,9 +4,22 @@ import { AddNode, SubtractNode, MultiplyNode, DivideNode, SinNode, CosNode } fro
 import { MemoryNode, LatchNode } from './stateful-nodes.mjs'
 import { RandomNode } from './stochastic-nodes.mjs'
 
+/**
+ * 导出所有节点类型
+ */
 export { Node, InputNode, ConstantNode, OutputNode, AddNode, SubtractNode, MultiplyNode, DivideNode, SinNode, CosNode, RandomNode, MemoryNode, LatchNode }
 
+/**
+ * @class NodeFactory
+ * @classdesc 节点工厂，用于从JSON创建节点实例。
+ */
 export class NodeFactory {
+	/**
+	 * 从JSON对象创建节点实例。
+	 * @param {object} json - 节点的JSON表示。
+	 * @param {Map<string, Node>} nodeMap - 网络中所有节点的映射。
+	 * @returns {Node} - 新的节点实例。
+	 */
 	static fromJSON(json, nodeMap) {
 		let node
 		switch (json.type) {

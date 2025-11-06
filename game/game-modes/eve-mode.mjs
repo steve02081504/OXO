@@ -3,7 +3,17 @@ import { NeuralNetwork } from '../../neural/neural-network.mjs'
 
 import { BaseMode } from './base-mode.mjs'
 
+/**
+ * @class EVEMode
+ * @classdesc EVE模式，用于AI与AI之间的对战。
+ * @augments BaseMode
+ */
 export class EVEMode extends BaseMode {
+	/**
+	 * 初始化EVEMode。
+	 * @param {object} gameManager - 游戏管理器实例。
+	 * @param {object} options - 初始化选项。
+	 */
 	async initialize(gameManager, options = {}) {
 		this.playerAIs = { X: null, O: null }
 		await super.initialize(gameManager, options)
@@ -22,6 +32,11 @@ export class EVEMode extends BaseMode {
 		this.startAutoplay()
 	}
 
+	/**
+	 * 决定使用哪个神经网络。
+	 * @param {object} options - 包含网络选项的对象。
+	 * @returns {{networkX: NeuralNetwork, networkO: NeuralNetwork}} 包含X和O玩家网络的神经网络对象。
+	 */
 	determineNetworks(options) {
 		let { networkX, networkO } = options
 		const ga = this.gameManager.geneticAlgorithm
@@ -44,7 +59,16 @@ export class EVEMode extends BaseMode {
 		return { networkX, networkO }
 	}
 
+	/**
+	 * 处理URL参数，加载指定的神经网络。
+	 * @param {object} options - 包含URL参数的对象。
+	 */
 	async handleUrlParams(options) {
+		/**
+		 * 异步加载并设置AI。
+		 * @param {string} player - 玩家（'X' 或 'O'）。
+		 * @param {string} url - 神经网络模型的URL。
+		 */
 		const loadAndSetAI = async (player, url) => {
 			if (url) try {
 				this.playerAIs[player] = AIFactory.createNeuralAI(await NeuralNetwork.fromUrl(url))
@@ -59,13 +83,23 @@ export class EVEMode extends BaseMode {
 		])
 	}
 
+	/**
+	 * 清理模式，隐藏所有控件和可视化。
+	 */
 	cleanup() {
 		super.cleanup()
 		this.gameManager.uiManager.hideAllControls()
 		this.gameManager.uiManager.clearAllVisualizations()
 	}
 
+
+	/**
+	 * 启动自动播放，让AI之间进行对战。
+	 */
 	startAutoplay() {
+		/**
+		 * 游戏循环，用于驱动AI移动。
+		 */
 		const gameLoop = async () => {
 			if (!this.gameManager.gameState.gameActive || this.gameManager.modeManager.currentMode !== this)
 				return

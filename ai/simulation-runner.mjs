@@ -1,6 +1,13 @@
 import { GameConfig } from '../config.mjs'
 import { GameState } from '../game/game-state.mjs'
 
+/**
+ * 运行一局游戏模拟。
+ * @param {object} aiX - X玩家的AI实例。
+ * @param {object} aiO - O玩家的AI实例。
+ * @param {number} [maxMoves=GameConfig.ai.training.maxMovesPerGame] - 每局游戏的最大移动次数。
+ * @returns {Promise<{moves: Array<object>, winner: string|null, winCondition: object|null}>} 游戏结果。
+ */
 export async function runGameSimulation(aiX, aiO, maxMoves = GameConfig.ai.training.maxMovesPerGame) {
 	const gameStateInstance = new GameState()
 	const moves = []
