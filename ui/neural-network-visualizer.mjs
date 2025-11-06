@@ -1,6 +1,13 @@
 import { InputNode, OutputNode, ConstantNode } from '../neural/nodes/index.mjs'
 
+/**
+ * @class NeuralNetworkVisualizer
+ * @classdesc 负责可视化神经网络。
+ */
 export class NeuralNetworkVisualizer {
+	/**
+	 * @constructor
+	 */
 	constructor() {
 		this.canvas = document.createElement('canvas')
 		this.canvas.className = 'w-full h-auto bg-base-300 rounded-lg shadow'
@@ -8,13 +15,16 @@ export class NeuralNetworkVisualizer {
 	}
 
 	/**
-	 * 返回visualizer的根DOM元素
+	 * 返回visualizer的根DOM元素。
 	 * @returns {HTMLCanvasElement}
 	 */
 	getElement() {
 		return this.canvas
 	}
 
+	/**
+	 * 调整画布大小以适应其容器。
+	 */
 	resizeCanvas() {
 		const container = this.canvas.parentElement
 		if (container) {
@@ -23,6 +33,12 @@ export class NeuralNetworkVisualizer {
 		}
 	}
 
+	/**
+	 * 更新网络可视化。
+	 * @param {object} neuralNetwork - 神经网络实例。
+	 * @param {Array<number>} activeNodeIds - 激活的节点ID。
+	 * @param {Array<object>} activeConnections - 激活的连接。
+	 */
 	updateNetworkVisualization(neuralNetwork, activeNodeIds = [], activeConnections = []) {
 		if (!this.canvas || !this.ctx || !neuralNetwork) return
 
@@ -36,6 +52,11 @@ export class NeuralNetworkVisualizer {
 		this.drawNodes(nodes, nodePositions, activeNodeIds)
 	}
 
+	/**
+	 * 计算节点位置。
+	 * @param {Array<object>} nodes - 节点数组。
+	 * @returns {Map<number, object>} 包含节点位置的Map。
+	 */
 	calculateNodePositions(nodes) {
 		const positions = new Map()
 		const nodeLayers = new Map()
@@ -120,6 +141,12 @@ export class NeuralNetworkVisualizer {
 		return positions
 	}
 
+	/**
+	 * 绘制节点。
+	 * @param {Array<object>} nodes - 节点数组。
+	 * @param {Map<number, object>} positions - 节点位置。
+	 * @param {Array<number>} activeNodeIds - 激活的节点ID。
+	 */
 	drawNodes(nodes, positions, activeNodeIds) {
 		nodes.forEach(node => {
 			const pos = positions.get(node.id)
@@ -133,6 +160,12 @@ export class NeuralNetworkVisualizer {
 		})
 	}
 
+	/**
+	 * 绘制连接。
+	 * @param {Array<object>} connections - 连接数组。
+	 * @param {Map<number, object>} positions - 节点位置。
+	 * @param {Array<object>} activeConnections - 激活的连接。
+	 */
 	drawConnections(connections, positions, activeConnections) {
 		connections.forEach(conn => {
 			const fromPos = positions.get(conn.from.id)
@@ -149,6 +182,11 @@ export class NeuralNetworkVisualizer {
 		})
 	}
 
+	/**
+	 * 获取节点颜色。
+	 * @param {object} node - 节点实例。
+	 * @returns {string} 节点颜色。
+	 */
 	getNodeColor(node) {
 		if (node instanceof InputNode) return 'lightblue'
 		if (node instanceof OutputNode) return 'lightgreen'
@@ -156,12 +194,15 @@ export class NeuralNetworkVisualizer {
 		return 'gray'
 	}
 
+	/**
+	 * 清除画布。
+	 */
 	clearCanvas() {
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 	}
 
 	/**
-	 * 创建包含标题和canvas的完整UI组件
+	 * 创建包含标题和canvas的完整UI组件。
 	 * @returns {HTMLElement}
 	 */
 	createCanvasWithWrapper() {

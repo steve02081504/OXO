@@ -10,12 +10,24 @@ const WINNING_LINE_COORDS = [
 	{ x1: -10, y1: -10, x2: 130, y2: 130 }, { x1: 130, y1: -10, x2: -10, y2: 130 }
 ]
 
+/**
+ * @class BoardRenderer
+ * @classdesc 负责渲染棋盘和棋子。
+ */
 export class BoardRenderer {
+	/**
+	 * @constructor
+	 */
 	constructor() {
 		this.cellElements = []
 		this.boardElement = null
 	}
 
+	/**
+	 * 初始化棋盘。
+	 * @param {HTMLElement} boardElement - 棋盘的DOM元素。
+	 * @param {Function} cellClickHandler - 单元格点击事件的处理函数。
+	 */
 	initializeBoard(boardElement, cellClickHandler) {
 		this.boardElement = boardElement
 		this.boardElement.innerHTML = ''
@@ -30,12 +42,23 @@ export class BoardRenderer {
 		}
 	}
 
+	/**
+	 * 更新棋盘显示。
+	 * @param {Array<string>} gameStateArray - 游戏状态数组。
+	 * @param {Array<object>} moveHistory - 移动历史记录。
+	 */
 	updateBoard(gameStateArray, moveHistory) {
 		gameStateArray.forEach((player, index) => {
 			this.updateCell(index, player, moveHistory)
 		})
 	}
 
+	/**
+	 * 更新单个单元格的显示。
+	 * @param {number} cellIndex - 单元格索引。
+	 * @param {string} playerSymbol - 玩家符号 ('X' 或 'O')。
+	 * @param {Array<object>} moveHistory - 移动历史记录。
+	 */
 	updateCell(cellIndex, playerSymbol, moveHistory) {
 		const cell = this.cellElements[cellIndex]
 		if (!cell) return
@@ -65,6 +88,13 @@ export class BoardRenderer {
 		}
 	}
 
+	/**
+	 * 更新棋子透明度。
+	 * @param {HTMLElement} element - 棋子元素。
+	 * @param {number} cellIndex - 单元格索引。
+	 * @param {string} player - 玩家符号。
+	 * @param {Array<object>} moveHistory - 移动历史记录。
+	 */
 	updatePieceOpacity(element, cellIndex, player, moveHistory) {
 		const move = moveHistory.findLast(m => m.cellIndex === cellIndex && m.player === player)
 		let opacity = 1.0
@@ -73,6 +103,11 @@ export class BoardRenderer {
 		element.style.opacity = opacity
 	}
 
+	/**
+	 * 绘制胜利连线。
+	 * @param {object} winResult - 胜利结果。
+	 * @returns {Promise<void>} - 动画完成的Promise。
+	 */
 	drawWinningLine(winResult) {
 		if (!winResult) return
 
@@ -89,6 +124,9 @@ export class BoardRenderer {
 				strokeDashoffset: [anime.setDashoffset, 0],
 				easing: 'easeInOutSine',
 				duration: GameConfig.animation.winLineDuration,
+				/**
+				 * 动画完成时的回调。
+				 */
 				complete: () => {
 					winResult.condition.forEach(cellIndex => {
 						this.cellElements[cellIndex].classList.add('winning-cell')
@@ -99,6 +137,9 @@ export class BoardRenderer {
 		})
 	}
 
+	/**
+	 * 重置棋盘和胜利连线。
+	 */
 	resetBoardAndWinningLine() {
 		if (this.boardElement) {
 			this.cellElements.forEach(cell => {
@@ -111,6 +152,10 @@ export class BoardRenderer {
 		}
 	}
 
+	/**
+	 * 设置棋盘的交互状态。
+	 * @param {boolean} enabled - 是否启用交互。
+	 */
 	setBoardInteraction(enabled) {
 		if (this.boardElement)
 			this.boardElement.style.pointerEvents = enabled ? 'auto' : 'none'

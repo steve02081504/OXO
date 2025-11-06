@@ -2,6 +2,10 @@ import { initializeEventListeners } from './app/ui-controller.mjs'
 import { PVPMode, PVEMode, EVEMode, AutoEVEMode, ReplayMode } from './game/game-modes/index.mjs'
 import { GameManager } from './game/index.mjs'
 
+/**
+ * @fileoverview App entry point.
+ * @desc 应用程序入口点。
+ */
 document.addEventListener('DOMContentLoaded', async () => {
 	const gameManager = new GameManager()
 

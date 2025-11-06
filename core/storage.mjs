@@ -7,6 +7,10 @@ const POPULATION_STORE = 'population'
 
 let db = null
 
+/**
+ * 打开IndexedDB数据库。
+ * @returns {Promise<IDBDatabase>} 数据库实例。
+ */
 async function openDB() {
 	return new Promise((resolve, reject) => {
 		const request = indexedDB.open(DB_NAME, DB_VERSION)
@@ -17,6 +21,9 @@ async function openDB() {
 			resolve(db)
 		}
 
+		/**
+		 * @param {IDBVersionChangeEvent} event - 数据库升级事件。
+		 */
 		request.onupgradeneeded = (event) => {
 			const db = event.target.result
 			if (!db.objectStoreNames.contains(POPULATION_STORE))
@@ -25,6 +32,12 @@ async function openDB() {
 	})
 }
 
+/**
+ * 保存种群和进化数据。
+ * @param {object} params - 参数对象。
+ * @param {Array<object>} params.population - 种群数组。
+ * @param {object} params.evolutionData - 进化数据。
+ */
 export async function savePopulation({ population, evolutionData }) {
 	try {
 		if (!db) await openDB()
@@ -48,6 +61,10 @@ export async function savePopulation({ population, evolutionData }) {
 	}
 }
 
+/**
+ * 加载种群和进化数据。
+ * @returns {Promise<object|null>} 包含种群和进化数据的对象，如果不存在则返回null。
+ */
 export async function loadPopulation() {
 	try {
 		if (!db) await openDB()

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview 游戏配置文件
+ * @desc 包含游戏的所有配置选项
+ */
 export const GameConfig = {
 	board: {
 		size: 9,

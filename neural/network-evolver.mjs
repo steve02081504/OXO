@@ -6,15 +6,20 @@ import { ConstantNode } from './nodes/io-nodes.mjs'
 // 1. 导入所有节点类型
 
 /**
- * 网络进化器：负责神经网络的突变和交叉操作
- * 遵循单一职责原则，将进化逻辑从 NeuralNetwork 类中分离出来
+ * @class NetworkEvolver
+ * @classdesc 网络进化器：负责神经网络的突变和交叉操作。
+ * 遵循单一职责原则，将进化逻辑从 NeuralNetwork 类中分离出来。
  */
 export class NetworkEvolver {
 	/**
-	 * 突变网络结构和参数
-	 * @param {NeuralNetwork} network - 要突变的网络
+	 * 突变网络结构和参数。
+	 * @param {NeuralNetwork} network - 要突变的网络。
 	 */
 	static mutate(network) {
+		/**
+		 * 获取一个随机的突变值。
+		 * @returns {number} 随机突变值。
+		 */
 		const getRandomMutationValue = () => {
 			const multiplier = GameConfig.ai.mutation.gaussianMultiplier
 			const offset = GameConfig.ai.mutation.gaussianOffset
@@ -22,6 +27,15 @@ export class NetworkEvolver {
 		}
 
 		// 应用突变的辅助函数
+		/**
+		 * 应用突变。
+		 * @param {number} value - 要突变的值。
+		 * @param {string} evolvabilityKey - 可进化性键。
+		 * @param {string} mutationStrengthKey - 突变强度键。
+		 * @param {number} [min=-Infinity] - 最小值。
+		 * @param {number} [max=Infinity] - 最大值。
+		 * @returns {number} 突变后的值。
+		 */
 		const applyMutation = (value, evolvabilityKey, mutationStrengthKey, min = -Infinity, max = Infinity) => {
 			if (NeuralNetwork.gaussianRandom() < network.evolvability[evolvabilityKey]) {
 				const change = getRandomMutationValue() * network.mutationStrength[mutationStrengthKey]
@@ -64,10 +78,10 @@ export class NetworkEvolver {
 	}
 
 	/**
-	 * 交叉两个网络产生子代
-	 * @param {NeuralNetwork} parent1 - 父代网络1
-	 * @param {NeuralNetwork} parent2 - 父代网络2
-	 * @returns {NeuralNetwork} - 子代网络
+	 * 交叉两个网络产生子代。
+	 * @param {NeuralNetwork} parent1 - 父代网络1。
+	 * @param {NeuralNetwork} parent2 - 父代网络2。
+	 * @returns {NeuralNetwork} - 子代网络。
 	 */
 	static crossover(parent1, parent2) {
 		const child = parent1.clone()
@@ -96,6 +110,11 @@ export class NetworkEvolver {
 
 		return child
 	}
+
+	/**
+	 * 向网络中添加一个随机节点。
+	 * @param {NeuralNetwork} network - 要修改的网络。
+	 */
 	static addRandomNode(network) {
 		const nodeTypes = [
 			AddNode, SubtractNode, MultiplyNode, DivideNode, SinNode, CosNode,
@@ -149,6 +168,10 @@ export class NetworkEvolver {
 			network.nodes.set(newNode.id, newNode)
 	}
 
+	/**
+	 * 从网络中移除一个随机节点。
+	 * @param {NeuralNetwork} network - 要修改的网络。
+	 */
 	static removeRandomNode(network) {
 		const hiddenNodes = network.getHiddenNodes()
 		if (hiddenNodes.length === 0) return
@@ -161,6 +184,10 @@ export class NetworkEvolver {
 		})
 	}
 
+	/**
+	 * 向网络中添加一个随机连接。
+	 * @param {NeuralNetwork} network - 要修改的网络。
+	 */
 	static addRandomConnection(network) {
 		const sourceNodes = network.getAvailableSourceNodes()
 		const targetNodes = network.getAvailableTargetNodes()
@@ -178,6 +205,10 @@ export class NetworkEvolver {
 		}
 	}
 
+	/**
+	 * 从网络中移除一个随机连接。
+	 * @param {NeuralNetwork} network - 要修改的网络。
+	 */
 	static removeRandomConnection(network) {
 		const targetNodes = network.getAvailableTargetNodes()
 		const nodesWithConnections = targetNodes.filter(node => node.inputs.length > 0)
@@ -191,6 +222,10 @@ export class NetworkEvolver {
 			nodeToModify.parameters.weights.splice(connectionIndex, 1)
 	}
 
+	/**
+	 * 随机改变网络中一个节点的类型。
+	 * @param {NeuralNetwork} network - 要修改的网络。
+	 */
 	static changeRandomNodeType(network) {
 		const hiddenNodes = network.getHiddenNodes()
 		if (hiddenNodes.length === 0) return

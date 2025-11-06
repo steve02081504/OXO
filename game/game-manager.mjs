@@ -6,7 +6,14 @@ import { UIManager } from '../ui/ui-manager.mjs'
 import { GameModeManager } from './game-modes/index.mjs'
 import { GameState } from './game-state.mjs'
 
+/**
+ * @class GameManager
+ * @classdesc 游戏管理器，负责整个游戏的逻辑。
+ */
 export class GameManager {
+	/**
+	 * @constructor
+	 */
 	constructor() {
 		this.gameState = new GameState()
 		this.uiManager = new UIManager(this)
@@ -20,12 +27,20 @@ export class GameManager {
 		this.userInputResolver = null
 	}
 
+	/**
+	 * 初始化游戏管理器。
+	 */
 	async initialize() {
 		const { ga, evolutionData } = await GeneticAlgorithm.createWithEvolutionData(GameConfig.ai.populationSize, GameConfig.ai.mutationRate)
 		this.geneticAlgorithm = ga
 		this.trainingManager = new TrainingManager(this.geneticAlgorithm, evolutionData)
 	}
 
+	/**
+	 * 开始一个新游戏。
+	 * @param {string} mode - 游戏模式。
+	 * @param {object} [options={}] - 游戏选项。
+	 */
 	async startGame(mode, options = {}) {
 		this.currentModeName = mode
 		this.currentModeOptions = options
@@ -37,10 +52,16 @@ export class GameManager {
 		await this.modeManager.currentMode.onMoveMade()
 	}
 
+	/**
+	 * 重新开始当前游戏。
+	 */
 	restartCurrentGame() {
 		if (this.currentModeName) this.startGame(this.currentModeName, this.currentModeOptions)
 	}
 
+	/**
+	 * 重置到模式选择界面。
+	 */
 	async resetToModeSelection() {
 		await this.modeManager.currentMode?.cleanup?.()
 
@@ -49,6 +70,10 @@ export class GameManager {
 		this.uiManager.resetBoardAndWinningLine()
 	}
 
+	/**
+	 * 处理单元格点击事件。
+	 * @param {number} cellIndex - 被点击的单元格索引。
+	 */
 	handleCellClick(cellIndex) {
 		if (!this.gameState.gameActive) return
 
@@ -60,8 +85,8 @@ export class GameManager {
 	}
 
 	/**
-	 * 等待玩家输入的公共接口
-	 * @returns {Promise<number>} 一个解析为玩家点击的 cellIndex 的 Promise
+	 * 等待玩家输入的公共接口。
+	 * @returns {Promise<number>} 一个解析为玩家点击的 cellIndex 的 Promise。
 	 */
 	waitForPlayerInput() {
 		this.uiManager.setBoardInteraction(true)
@@ -72,6 +97,9 @@ export class GameManager {
 		})
 	}
 
+	/**
+	 * 处理游戏结束。
+	 */
 	handleGameEnd() {
 		this.uiManager.showEndgameActions()
 		this.uiManager.showExportHistoryButton()
@@ -80,6 +108,10 @@ export class GameManager {
 		this.callAIEndGameCallbacks()
 	}
 
+	/**
+	 * 执行一步移动。
+	 * @param {number} cellIndex - 移动的单元格索引。
+	 */
 	async makeMove(cellIndex) {
 		if (!this.gameState.gameActive) return
 
@@ -108,6 +140,11 @@ export class GameManager {
 		await this.modeManager.currentMode.onMoveMade()
 	}
 
+	/**
+	 * 处理AI的移动。
+	 * @param {object} ai - AI实例。
+	 * @param {object} gameState - 游戏状态。
+	 */
 	async handleAIMove(ai, gameState) {
 		const move = await ai.getMove(gameState)
 
@@ -117,6 +154,12 @@ export class GameManager {
 		await this.makeMove(move)
 	}
 
+	/**
+	 * 播放游戏历史记录。
+	 * @param {Array<object>} fullMoveHistory - 完整的移动历史记录。
+	 * @param {number} [delay=GameConfig.animation.moveDuration] - 每一步之间的延迟。
+	 * @param {Function|null} [onStep=null] - 每一步的回调函数。
+	 */
 	async playHistory(fullMoveHistory, delay = GameConfig.animation.moveDuration, onStep = null) {
 		this.isReplayCancelled = false
 		this.uiManager.resetBoardAndWinningLine()
@@ -154,13 +197,23 @@ export class GameManager {
 			await this.uiManager.drawWinningLine(winResult)
 	}
 
+	/**
+	 * 停止回放。
+	 */
 	stopReplay() {
 		this.isReplayCancelled = true
 	}
 
+	/**
+	 * 退出游戏。
+	 */
 	exitGame() {
 		this.resetToModeSelection()
 	}
+
+	/**
+	 * 调用AI的游戏结束回调。
+	 */
 	callAIEndGameCallbacks() {
 		const winner = GameState.checkWinConditionFromState(this.gameState.board)?.winner
 

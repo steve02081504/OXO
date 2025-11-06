@@ -1,3 +1,7 @@
+/**
+ * @fileoverview This file exports constants that reference DOM elements.
+ * @desc DOM元素引用
+ */
 export const winningLineSVG = document.getElementById('winning-line-svg'),
 	turnXElement = document.getElementById('turn-x'),
 	turnOElement = document.getElementById('turn-o'),
