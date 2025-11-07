@@ -2,6 +2,7 @@ import { GameConfig } from '../config.mjs'
 import { loadPopulation } from '../core/storage.mjs'
 
 import { NetworkEvolver } from './network-evolver.mjs'
+import { applyRandomSymmetry } from './network-transformer.mjs'
 import { NeuralNetwork } from './neural-network.mjs'
 
 /**
@@ -83,6 +84,7 @@ export class GeneticAlgorithm {
 			for (let j = 0; j < 2; j++) {
 				const mutant = this.tournamentSelection().clone()
 				mutant.mutate()
+				applyRandomSymmetry(mutant)
 				newPopulation.push(mutant)
 			}
 
@@ -93,6 +95,7 @@ export class GeneticAlgorithm {
 			const child = parent1.crossover(parent2)
 			child.fitness = (parent1.fitness + parent2.fitness) / 2
 			child.mutate()
+			applyRandomSymmetry(child)
 			newPopulation.push(child)
 		}
 
