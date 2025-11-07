@@ -205,19 +205,10 @@ export class TrainingManager {
 			// 只记录有胜负分明的对战记录到播放队列中（平局和强制截停的不记录）
 			if (gameResult.winner) this.latestCompletedGame = gameResult
 
-			// 检查平均对局长度并执行替换逻辑
 			this.avgGameLength = (this.avgGameLength * 49 + gameResult.moves.length) / 50
 
 			const winnerNetwork = gameResult.winner === 'X' ? network1 : network2
 			const loserNetwork = gameResult.winner === 'X' ? network2 : network1
-			if (this.avgGameLength > GameConfig.board.size * GameConfig.rules.maxLifetime &&
-				gameResult.winner &&
-				winnerNetwork.fitness >= loserNetwork.fitness
-			) {
-				const loserIndex = population.indexOf(loserNetwork)
-				population[loserIndex] = winnerNetwork.clone()
-				population[loserIndex].mutate()
-			}
 
 			const movesTaken = gameResult.moves.length
 			const scoreFactor = Math.max(0, 100 - movesTaken)
