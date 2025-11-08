@@ -21,7 +21,9 @@ export const GameConfig = {
 		elitismRate: 0.1,
 		fitnessScore: {
 			X: 0.1,  // First player (proactive) reward
-			O: 5.0   // Second player (reactive) reward - higher to encourage defensive learning
+			O: 5.0,   // Second player (reactive) reward - higher to encourage defensive learning
+			scenarioWin: 10, // Reward for winning a special scenario
+			scenarioLoss: 5 // Penalty for losing a special scenario
 		},
 		training: {
 			maxMovesPerGame: 500,

@@ -4,6 +4,8 @@ import { TraditionalAI } from '../ai/traditional-ai.mjs'
 import { GameConfig } from '../config.mjs'
 import { savePopulation } from '../core/storage.mjs'
 
+import { EndgameScenarioGenerator } from './endgame-scenario-generator.mjs'
+
 /**
  * @class TrainingManager
  * @classdesc 管理AI的训练过程。
@@ -18,6 +20,7 @@ export class TrainingManager {
 		this.geneticAlgorithm = geneticAlgorithm
 		this.trainingRunning = false
 		this.isFullSpeed = false
+		this.scenarioGenerator = new EndgameScenarioGenerator()
 
 		// 复用AI实例以优化性能
 		this.aiPlayerX = new NeuralAI()
@@ -183,48 +186,72 @@ export class TrainingManager {
 	async trainingLoop() {
 		while (this.trainingRunning) {
 			const startTime = performance.now()
-
 			const { population } = this.geneticAlgorithm
-			const network1Index = Math.floor(Math.random() * population.length)
-			let network2Index
 
-			do network2Index = Math.floor(Math.random() * population.length)
-			while (network2Index === network1Index)
+			// 有一定几率运行特定场景训练
+			if (Math.random() < 0.2) {
+				const scenario = Math.random() < 0.5
+					? this.scenarioGenerator.generateWinInOneScenario()
+					: this.scenarioGenerator.generateMustBlockScenario()
 
-			const network1 = population[network1Index]
-			const network2 = population[network2Index]
+				if (scenario) {
+					const network = population[Math.floor(Math.random() * population.length)]
+					this.aiPlayerX.setNetwork(network)
 
-			this.lastPlayedNetworkX = network1
-			this.lastPlayedNetworkO = network2
+					// 模拟AI在该场景下的决策
+					const decision = this.aiPlayerX.decide(scenario.board, scenario.currentPlayer)
+					if (decision === scenario.correctMove)
+						network.fitness += GameConfig.ai.fitnessScore.scenarioWin
+					else
+						network.fitness -= GameConfig.ai.fitnessScore.scenarioLoss
 
-			this.aiPlayerX.setNetwork(network1)
-			this.aiPlayerO.setNetwork(network2)
-
-			const gameResult = await runGameSimulation(this.aiPlayerX, this.aiPlayerO, GameConfig.ai.training.maxMovesPerGame)
-
-			// 只记录有胜负分明的对战记录到播放队列中（平局和强制截停的不记录）
-			if (gameResult.winner) this.latestCompletedGame = gameResult
-
-			this.avgGameLength = (this.avgGameLength * 49 + gameResult.moves.length) / 50
-
-			const winnerNetwork = gameResult.winner === 'X' ? network1 : network2
-			const loserNetwork = gameResult.winner === 'X' ? network2 : network1
-
-			const movesTaken = gameResult.moves.length
-			const scoreFactor = Math.max(0, 100 - movesTaken)
-
-			if (gameResult.winner) {
-				winnerNetwork.fitness += (GameConfig.ai.fitnessScore[gameResult.winner] / 100) * scoreFactor
-				winnerNetwork.fitness += (Math.max(loserNetwork.fitness, 0) / 10) || 0
-				this.generationWinRates.push(Number(gameResult.winner === 'X'))
-				this.currentGenerationXWins++
-				loserNetwork.fitness += (GameConfig.ai.fitnessScore[gameResult.winner === 'X' ? 'O' : 'X'] / 100) * movesTaken
+					this.battleCount++
+				}
 			}
-			else
-				this.generationWinRates.push(0.5)
-			this.currentGenerationDraws++
+			else {
+				const network1Index = Math.floor(Math.random() * population.length)
+				let network2Index
 
-			this.battleCount++
+				do network2Index = Math.floor(Math.random() * population.length)
+				while (network2Index === network1Index)
+
+				const network1 = population[network1Index]
+				const network2 = population[network2Index]
+
+				this.lastPlayedNetworkX = network1
+				this.lastPlayedNetworkO = network2
+
+				this.aiPlayerX.setNetwork(network1)
+				this.aiPlayerO.setNetwork(network2)
+
+				const gameResult = await runGameSimulation(this.aiPlayerX, this.aiPlayerO, GameConfig.ai.training.maxMovesPerGame)
+
+				// 只记录有胜负分明的对战记录到播放队列中（平局和强制截停的不记录）
+				if (gameResult.winner) this.latestCompletedGame = gameResult
+
+				this.avgGameLength = (this.avgGameLength * 49 + gameResult.moves.length) / 50
+
+				const winnerNetwork = gameResult.winner === 'X' ? network1 : network2
+				const loserNetwork = gameResult.winner === 'X' ? network2 : network1
+
+				const movesTaken = gameResult.moves.length
+				const scoreFactor = Math.max(0, 100 - movesTaken)
+
+				if (gameResult.winner) {
+					winnerNetwork.fitness += (GameConfig.ai.fitnessScore[gameResult.winner] / 100) * scoreFactor
+					winnerNetwork.fitness += (Math.max(loserNetwork.fitness, 0) / 10) || 0
+					this.generationWinRates.push(Number(gameResult.winner === 'X'))
+					this.currentGenerationXWins++
+					loserNetwork.fitness += (GameConfig.ai.fitnessScore[gameResult.winner === 'X' ? 'O' : 'X'] / 100) * movesTaken
+				}
+				else {
+					this.generationWinRates.push(0.5)
+					this.currentGenerationDraws++
+				}
+
+				this.battleCount++
+			}
+
 			this.bestFitness = Math.max(...population.map(n => n.fitness || 0))
 
 			if (this.battleCount % (this.geneticAlgorithm.populationSize * 5) === 0) {

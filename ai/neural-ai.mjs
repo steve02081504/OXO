@@ -29,6 +29,42 @@ export class NeuralAI extends AI {
 	}
 
 	/**
+	 * 在给定一个棋盘状态下，决定最佳的移动。
+	 * 这是一个简化版本，主要用于训练场景，不考虑棋子寿命。
+	 * @param {string[]} board - 棋盘状态。
+	 * @param {string} currentPlayer - 当前玩家。
+	 * @returns {number} 最佳移动的索引。
+	 */
+	decide(board, currentPlayer) {
+		const availableCells = this.getAvailableCells(board)
+		if (availableCells.length === 0) return -1
+
+		// 为场景训练创建一个简化的输入
+		const inputs = new Array(9).fill(0)
+		const opponentPlayer = currentPlayer === 'X' ? 'O' : 'X'
+		for (let i = 0; i < board.length; i++) 
+			if (board[i] === currentPlayer)
+				inputs[i] = 1 // 使用 1 代表自己的棋子
+			else if (board[i] === opponentPlayer)
+				inputs[i] = -1 // 使用 -1 代表对手的棋子
+		
+
+		const { outputValues } = this.network.forward(inputs)
+
+		// 从可用单元格中选择输出值最高的一个
+		let bestMove = -1
+		let maxOutput = -Infinity
+		for (const cellIndex of availableCells) 
+			if (outputValues[cellIndex] > maxOutput) {
+				maxOutput = outputValues[cellIndex]
+				bestMove = cellIndex
+			}
+		
+		return bestMove
+	}
+
+
+	/**
 	 * 获取AI的下一步移动。
 	 * @param {object} gameState - 当前游戏状态。
 	 * @returns {Promise<number>} AI选择的单元格索引。
